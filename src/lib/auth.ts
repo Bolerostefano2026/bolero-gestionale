@@ -1,0 +1,73 @@
+import NextAuth from "next-auth";
+import Credentials from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
+import { prisma } from "@/lib/prisma";
+
+export const { handlers, signIn, signOut, auth } = NextAuth({
+  session: { strategy: "jwt" },
+  pages: { signIn: "/login" },
+  providers: [
+    Credentials({
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      authorize: async (credentials) => {
+        const email = credentials?.email as string | undefined;
+        const password = credentials?.password as string | undefined;
+        if (!email || !password) return null;
+
+        const user = await prisma.user.findUnique({
+          where: { email: email.toLowerCase() },
+          include: { role: true },
+        });
+        if (!user || !user.active) return null;
+
+        const valid = await bcrypt.compare(password, user.passwordHash);
+        if (!valid) return null;
+
+        await prisma.auditLog.create({
+          data: {
+            userId: user.id,
+            entityType: "auth",
+            entityId: user.id,
+            action: "login",
+            source: "manual",
+          },
+        });
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          image: user.avatarUrl ?? undefined,
+          roleId: user.roleId,
+          roleName: user.role.name,
+          roleLabel: user.role.label,
+          permissions: (user.role.permissions as string[]) ?? [],
+        };
+      },
+    }),
+  ],
+  callbacks: {
+    jwt: async ({ token, user }) => {
+      if (user) {
+        token.roleId = user.roleId;
+        token.roleName = user.roleName;
+        token.roleLabel = user.roleLabel;
+        token.permissions = user.permissions;
+      }
+      return token;
+    },
+    session: async ({ session, token }) => {
+      if (session.user) {
+        session.user.id = token.sub!;
+        session.user.roleId = token.roleId as string;
+        session.user.roleName = token.roleName as string;
+        session.user.roleLabel = token.roleLabel as string;
+        session.user.permissions = token.permissions as string[];
+      }
+      return session;
+    },
+  },
+});

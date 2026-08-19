@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+:root {
+  --canvas: #F4EFE6;
+  --surface: #FDFAF5;
+  --sunken: #EDE7DC;
+  --fog: #D8D2C8;
+  --ink: #1C1814;
+  --ink2: #4A453F;
+  --ink3: #8C8680;
+  --copper: #A8682A;
+  --copper-lt: #C4895A;
+  --copper-bg: #F7EDE0;
+  --success: #3D7A52;
+  --success-bg: #E8F4ED;
+  --warn: #8A6B1A;
+  --warn-bg: #FBF3E0;
+  --danger: #913030;
+  --danger-bg: #FAE8E8;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --canvas: #111318;
+    --surface: #1A1F28;
+    --sunken: #0D1015;
+    --fog: #2A2F3A;
+    --ink: #F0EBE2;
+    --ink2: #B8B2A8;
+    --ink3: #6A6560;
+    --copper: #C4895A;
+    --copper-lt: #D4A070;
+    --copper-bg: #251C14;
+  }
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-sunken: var(--sunken);
+  --color-fog: var(--fog);
+  --color-ink: var(--ink);
+  --color-ink2: var(--ink2);
+  --color-ink3: var(--ink3);
+  --color-copper: var(--copper);
+  --color-copper-lt: var(--copper-lt);
+  --color-copper-bg: var(--copper-bg);
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
+  --color-warn: var(--warn);
+  --color-warn-bg: var(--warn-bg);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+}
+
+body {
+  background: var(--canvas);
+  color: var(--ink);
+}

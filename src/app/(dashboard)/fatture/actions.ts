@@ -1,0 +1,192 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { z } from "zod";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { hasPermission } from "@/lib/permissions";
+import { notifyTitolari } from "@/lib/notify";
+
+async function requireWrite() {
+  const session = await auth();
+  if (!hasPermission(session?.user.permissions, "invoices:write")) {
+    throw new Error("Permesso negato");
+  }
+  return session!;
+}
+
+async function nextInvoiceNumber() {
+  const year = new Date().getFullYear();
+  const count = await prisma.invoice.count({
+    where: { number: { startsWith: `FT-${year}-` } },
+  });
+  return `FT-${year}-${String(count + 1).padStart(4, "0")}`;
+}
+
+const itemSchema = z.object({
+  description: z.string().min(1),
+  amount: z.coerce.number().positive(),
+});
+
+const createSchema = z.object({
+  clientId: z.string().uuid("Seleziona un cliente"),
+  quoteId: z.string().uuid().optional().or(z.literal("")),
+  projectId: z.string().uuid().optional().or(z.literal("")),
+  items: z.string().transform((s, ctx) => {
+    try {
+      const parsed = JSON.parse(s);
+      return z.array(itemSchema).min(1, "Aggiungi almeno una voce").parse(parsed);
+    } catch {
+      ctx.addIssue({ code: "custom", message: "Voci non valide" });
+      return z.NEVER;
+    }
+  }),
+  dueDate: z.string().min(1, "Scadenza obbligatoria"),
+});
+
+export async function createInvoice(formData: FormData) {
+  const session = await requireWrite();
+
+  const parsed = createSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Dati non validi");
+  }
+
+  const { clientId, quoteId, projectId, items, dueDate } = parsed.data;
+  const total = items.reduce((sum, i) => sum + i.amount, 0);
+  const number = await nextInvoiceNumber();
+
+  const invoice = await prisma.invoice.create({
+    data: {
+      number,
+      clientId,
+      quoteId: quoteId || null,
+      projectId: projectId || null,
+      items,
+      total,
+      dueDate: new Date(dueDate),
+      createdById: session.user.id,
+    },
+  });
+
+  revalidatePath("/fatture");
+  return invoice.id;
+}
+
+export async function markInvoiceSent(invoiceId: string) {
+  await requireWrite();
+  await prisma.invoice.update({ where: { id: invoiceId }, data: { status: "INVIATA" } });
+  revalidatePath("/fatture");
+  revalidatePath(`/fatture/${invoiceId}`);
+}
+
+const paymentSchema = z.object({
+  amount: z.coerce.number().positive(),
+  method: z.string().min(1),
+  note: z.string().optional(),
+});
+
+export async function recordPayment(invoiceId: string, formData: FormData) {
+  const session = await requireWrite();
+
+  const parsed = paymentSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Dati non validi");
+  }
+
+  const invoice = await prisma.invoice.findUniqueOrThrow({
+    where: { id: invoiceId },
+    include: { payments: true },
+  });
+
+  await prisma.payment.create({
+    data: {
+      invoiceId,
+      amount: parsed.data.amount,
+      method: parsed.data.method,
+      note: parsed.data.note,
+      recordedById: session.user.id,
+    },
+  });
+
+  const paidSoFar =
+    invoice.payments.reduce((sum, p) => sum + Number(p.amount), 0) + parsed.data.amount;
+
+  if (paidSoFar >= Number(invoice.total)) {
+    await prisma.invoice.update({ where: { id: invoiceId }, data: { status: "PAGATA" } });
+  }
+
+  revalidatePath("/fatture");
+  revalidatePath(`/fatture/${invoiceId}`);
+}
+
+export async function createReminder(invoiceId: string) {
+  const session = await requireWrite();
+
+  const invoice = await prisma.invoice.findUniqueOrThrow({
+    where: { id: invoiceId },
+    include: { client: true },
+  });
+
+  const draft = await prisma.emailDraft.create({
+    data: {
+      clientId: invoice.clientId,
+      invoiceId: invoice.id,
+      subject: `Promemoria pagamento fattura ${invoice.number}`,
+      body: `Gentile ${invoice.client.name} ${invoice.client.surname},\n\nLe scriviamo per ricordarle che la fattura ${invoice.number} di €${Number(invoice.total).toFixed(2)} risulta ancora da saldare (scadenza: ${invoice.dueDate.toLocaleDateString("it-IT")}).\n\nLa preghiamo di provvedere al pagamento appena possibile, o di contattarci per qualsiasi chiarimento.\n\nCordiali saluti,\nBolero`,
+      createdById: session.user.id,
+    },
+  });
+
+  await notifyTitolari({
+    type: "reminder_pending",
+    title: `Promemoria da approvare — ${invoice.client.name} ${invoice.client.surname}`,
+    body: `Fattura ${invoice.number}`,
+    link: "/fatture/promemoria",
+  });
+
+  revalidatePath("/fatture");
+  return draft.id;
+}
+
+export async function approveReminder(draftId: string) {
+  const session = await auth();
+  if (!hasPermission(session?.user.permissions, "invoices:approve_reminder")) {
+    throw new Error("Permesso negato");
+  }
+
+  await prisma.emailDraft.update({
+    where: { id: draftId },
+    data: {
+      status: "INVIATA",
+      approvedById: session!.user.id,
+      decidedAt: new Date(),
+    },
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      userId: session!.user.id,
+      entityType: "email_draft",
+      entityId: draftId,
+      action: "approve_and_send",
+      source: "manual",
+    },
+  });
+
+  revalidatePath("/fatture/promemoria");
+}
+
+export async function rejectReminder(draftId: string) {
+  const session = await auth();
+  if (!hasPermission(session?.user.permissions, "invoices:approve_reminder")) {
+    throw new Error("Permesso negato");
+  }
+
+  await prisma.emailDraft.update({
+    where: { id: draftId },
+    data: { status: "RIFIUTATA", approvedById: session!.user.id, decidedAt: new Date() },
+  });
+
+  revalidatePath("/fatture/promemoria");
+}

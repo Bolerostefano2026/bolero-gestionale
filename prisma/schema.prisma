@@ -1,0 +1,451 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Fase 1: Auth, Utenti, Ruoli ──────────────────────────────
+
+model Role {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  label       String
+  isSystem    Boolean  @default(false)
+  permissions Json     @default("[]")
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("roles")
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  avatarUrl    String?
+  active       Boolean   @default(true)
+  roleId       String
+  role         Role      @relation(fields: [roleId], references: [id])
+  auditLogs    AuditLog[]
+  assignedAppointments Appointment[]
+  createdAppointments  Appointment[]  @relation("AppointmentCreatedBy")
+  createdQuotes        Quote[]
+  createdQuoteVersions QuoteVersion[]
+  createdMeasurements  Measurement[]
+  createdProjects      Project[]
+  triggeredWorkflowEvents WorkflowEvent[]
+  sentMessages         Message[]
+  createdInvoices      Invoice[]
+  recordedPayments     Payment[]
+  notifications        Notification[]
+  createdEmailDrafts   EmailDraft[] @relation("EmailDraftCreatedBy")
+  approvedEmailDrafts  EmailDraft[] @relation("EmailDraftApprovedBy")
+  createdAiActions     AiAction[]   @relation("AiActionCreatedBy")
+  decidedAiActions     AiAction[]   @relation("AiActionDecidedBy")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@map("users")
+  @@index([roleId])
+}
+
+// ── Fase 2+: entità core del gestionale (schema predisposto) ──
+
+enum ClientStatus {
+  LEAD
+  ATTIVO
+  IN_LAVORAZIONE
+  CHIUSO
+  INATTIVO
+}
+
+model Client {
+  id           String        @id @default(uuid())
+  name         String
+  surname      String
+  phone        String?
+  email        String?
+  address      String?
+  city         String?
+  cap          String?
+  status       ClientStatus  @default(LEAD)
+  notes        String?
+  appointments Appointment[]
+  quotes       Quote[]
+  measurements Measurement[]
+  projects     Project[]
+  messages     Message[]
+  invoices     Invoice[]
+  emailDrafts  EmailDraft[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("clients")
+}
+
+// ── Fase 2: Calendario ────────────────────────────────────────
+
+enum AppointmentType {
+  APPUNTAMENTO
+  SOPRALLUOGO
+  MONTAGGIO
+  ALTRO
+}
+
+enum AppointmentStatus {
+  PROGRAMMATO
+  CONFERMATO
+  COMPLETATO
+  ANNULLATO
+}
+
+model Appointment {
+  id           String            @id @default(uuid())
+  clientId     String
+  client       Client            @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  assignedToId String?
+  assignedTo   User?             @relation(fields: [assignedToId], references: [id])
+  type         AppointmentType   @default(APPUNTAMENTO)
+  status       AppointmentStatus @default(PROGRAMMATO)
+  scheduledAt  DateTime
+  durationMin  Int               @default(60)
+  address      String?
+  notes        String?
+  createdById  String?
+  createdBy    User?             @relation("AppointmentCreatedBy", fields: [createdById], references: [id])
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@map("appointments")
+  @@index([clientId])
+  @@index([scheduledAt])
+}
+
+// ── Fase 2: Preventivi ────────────────────────────────────────
+
+enum QuoteStatus {
+  BOZZA
+  INVIATO
+  IN_ATTESA
+  APPROVATO
+  RIFIUTATO
+  CONVERTITO
+  COMPLETATO
+}
+
+model Quote {
+  id          String        @id @default(uuid())
+  number      String        @unique
+  clientId    String
+  client      Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  status      QuoteStatus   @default(BOZZA)
+  version     Int           @default(1)
+  items       Json          @default("[]")
+  subtotal    Decimal       @default(0)
+  discount    Decimal       @default(0)
+  vatRate     Decimal       @default(22)
+  total       Decimal       @default(0)
+  notes       String?
+  validUntil  DateTime?
+  createdById String?
+  createdBy   User?         @relation(fields: [createdById], references: [id])
+  versions    QuoteVersion[]
+  projects    Project[]
+  invoices    Invoice[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("quotes")
+  @@index([clientId])
+}
+
+model QuoteVersion {
+  id          String   @id @default(uuid())
+  quoteId     String
+  quote       Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  version     Int
+  snapshot    Json
+  createdById String?
+  createdBy   User?    @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+
+  @@map("quote_versions")
+  @@index([quoteId])
+}
+
+// ── Fase 3: Prodotti & Misure ──────────────────────────────────
+
+model Product {
+  id          String                @id @default(uuid())
+  name        String
+  description String?
+  category    String?
+  active      Boolean               @default(true)
+  sortOrder   Int                   @default(0)
+  templates   MeasurementTemplate[]
+  measurements Measurement[]
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+
+  @@map("products")
+}
+
+model MeasurementTemplate {
+  id           String        @id @default(uuid())
+  productId    String
+  product      Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name         String
+  fields       Json          @default("[]")
+  version      Int           @default(1)
+  active       Boolean       @default(true)
+  measurements Measurement[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("measurement_templates")
+  @@index([productId])
+}
+
+model Measurement {
+  id          String              @id @default(uuid())
+  clientId    String
+  client      Client              @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product             @relation(fields: [productId], references: [id])
+  templateId  String
+  template    MeasurementTemplate @relation(fields: [templateId], references: [id])
+  data        Json
+  photos      Json                @default("[]")
+  notes       String?
+  createdById String?
+  createdBy   User?               @relation(fields: [createdById], references: [id])
+  projects    Project[]
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@map("measurements")
+  @@index([clientId])
+  @@index([productId])
+}
+
+// ── Fase 5: Workflow ────────────────────────────────────────────
+
+enum WorkflowStage {
+  CONTATTO
+  APPUNTAMENTO
+  SOPRALLUOGO
+  MISURE
+  PROGETTAZIONE
+  PREVENTIVO
+  PREVENTIVO_INVIATO
+  APPROVAZIONE
+  ORDINE
+  PRODUZIONE
+  PROGRAMMAZIONE_MONTAGGIO
+  MONTAGGIO
+  FATTURAZIONE
+  PAGAMENTO
+  CHIUSO
+}
+
+model Project {
+  id            String          @id @default(uuid())
+  clientId      String
+  client        Client          @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  quoteId       String?
+  quote         Quote?          @relation(fields: [quoteId], references: [id])
+  measurementId String?
+  measurement   Measurement?    @relation(fields: [measurementId], references: [id])
+  title         String
+  stage         WorkflowStage   @default(CONTATTO)
+  notes         String?
+  events        WorkflowEvent[]
+  invoices      Invoice[]
+  createdById   String?
+  createdBy     User?           @relation(fields: [createdById], references: [id])
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@map("projects")
+  @@index([clientId])
+  @@index([stage])
+}
+
+model WorkflowEvent {
+  id          String        @id @default(uuid())
+  projectId   String
+  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  fromStage   WorkflowStage?
+  toStage     WorkflowStage
+  triggeredById String?
+  triggeredBy User?         @relation(fields: [triggeredById], references: [id])
+  source      String        @default("manual")
+  note        String?
+  createdAt   DateTime      @default(now())
+
+  @@map("workflow_events")
+  @@index([projectId])
+}
+
+// ── Fase 6: Chat interna ────────────────────────────────────────
+
+enum MessageType {
+  INTERNAL
+  CLIENT
+}
+
+model Message {
+  id        String      @id @default(uuid())
+  clientId  String
+  client    Client      @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  senderId  String
+  sender    User        @relation(fields: [senderId], references: [id])
+  content   String
+  type      MessageType @default(INTERNAL)
+  readBy    Json        @default("[]")
+  createdAt DateTime    @default(now())
+
+  @@map("messages")
+  @@index([clientId])
+}
+
+// ── Fase 7: Fatture, Pagamenti, Notifiche, Automazioni ──────────
+
+enum InvoiceStatus {
+  BOZZA
+  INVIATA
+  PAGATA
+  SCADUTA
+  ANNULLATA
+}
+
+model Invoice {
+  id         String        @id @default(uuid())
+  number     String        @unique
+  clientId   String
+  client     Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  quoteId    String?
+  quote      Quote?        @relation(fields: [quoteId], references: [id])
+  projectId  String?
+  project    Project?      @relation(fields: [projectId], references: [id])
+  status     InvoiceStatus @default(BOZZA)
+  items      Json          @default("[]")
+  total      Decimal       @default(0)
+  dueDate    DateTime
+  issuedAt   DateTime      @default(now())
+  payments   Payment[]
+  reminders  EmailDraft[]
+  createdById String?
+  createdBy  User?         @relation(fields: [createdById], references: [id])
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@map("invoices")
+  @@index([clientId])
+  @@index([status])
+}
+
+model Payment {
+  id           String   @id @default(uuid())
+  invoiceId    String
+  invoice      Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  amount       Decimal
+  method       String   @default("bonifico")
+  note         String?
+  recordedById String?
+  recordedBy   User?    @relation(fields: [recordedById], references: [id])
+  paidAt       DateTime @default(now())
+
+  @@map("payments")
+  @@index([invoiceId])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  title     String
+  body      String?
+  link      String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("notifications")
+  @@index([userId, read])
+}
+
+enum EmailDraftStatus {
+  IN_ATTESA_APPROVAZIONE
+  APPROVATA
+  INVIATA
+  RIFIUTATA
+}
+
+model EmailDraft {
+  id           String           @id @default(uuid())
+  clientId     String
+  client       Client           @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  invoiceId    String?
+  invoice      Invoice?         @relation(fields: [invoiceId], references: [id])
+  subject      String
+  body         String
+  status       EmailDraftStatus @default(IN_ATTESA_APPROVAZIONE)
+  createdById  String?
+  createdBy    User?            @relation("EmailDraftCreatedBy", fields: [createdById], references: [id])
+  approvedById String?
+  approvedBy   User?            @relation("EmailDraftApprovedBy", fields: [approvedById], references: [id])
+  createdAt    DateTime         @default(now())
+  decidedAt    DateTime?
+
+  @@map("email_drafts")
+  @@index([clientId])
+  @@index([status])
+}
+
+// ── Fase 8: AI Orchestrator ──────────────────────────────────────
+
+enum AiActionStatus {
+  PENDING
+  EXECUTED
+  REJECTED
+}
+
+model AiAction {
+  id           String         @id @default(uuid())
+  agent        String         @default("orchestrator")
+  action       String
+  summary      String
+  payload      Json
+  status       AiActionStatus @default(PENDING)
+  createdById  String?
+  createdBy    User?          @relation("AiActionCreatedBy", fields: [createdById], references: [id])
+  decidedById  String?
+  decidedBy    User?          @relation("AiActionDecidedBy", fields: [decidedById], references: [id])
+  decidedAt    DateTime?
+  createdAt    DateTime       @default(now())
+
+  @@map("ai_actions")
+  @@index([status])
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  entityType String
+  entityId   String?
+  action     String
+  changes    Json?
+  source     String   @default("manual")
+  createdAt  DateTime @default(now())
+
+  @@map("audit_logs")
+  @@index([entityType, entityId])
+  @@index([userId])
+}
