@@ -319,8 +319,8 @@ export default async function ClientDetailPage({
                         className="flex items-center justify-between rounded-md border border-fog px-3 py-2 text-sm hover:border-copper"
                       >
                         <span className="text-ink">
-                          {q.number} — €
-                          {Number(q.total).toLocaleString("it-IT", {
+                          {q.number} — CHF 
+                          {Number(q.total).toLocaleString("it-CH", {
                             minimumFractionDigits: 2,
                           })}
                         </span>
@@ -361,8 +361,8 @@ export default async function ClientDetailPage({
                           className="flex items-center justify-between rounded-md border border-fog px-3 py-2 text-sm hover:border-copper"
                         >
                           <span className="text-ink">
-                            {inv.number} — €
-                            {Number(inv.total).toLocaleString("it-IT", {
+                            {inv.number} — CHF 
+                            {Number(inv.total).toLocaleString("it-CH", {
                               minimumFractionDigits: 2,
                             })}
                           </span>

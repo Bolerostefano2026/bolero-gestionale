@@ -105,7 +105,7 @@ export default async function FatturePage() {
                     {inv.client.name} {inv.client.surname}
                   </td>
                   <td className="px-4 py-2.5 tabular-nums text-ink2">
-                    €{Number(inv.total).toLocaleString("it-IT", { minimumFractionDigits: 2 })}
+                    CHF {Number(inv.total).toLocaleString("it-CH", { minimumFractionDigits: 2 })}
                   </td>
                   <td className="px-4 py-2.5 text-ink3">
                     {inv.dueDate.toLocaleDateString("it-IT")}

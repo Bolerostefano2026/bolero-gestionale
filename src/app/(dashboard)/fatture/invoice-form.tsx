@@ -17,7 +17,7 @@ type QuoteOption = {
 };
 
 function money(n: number) {
-  return n.toLocaleString("it-IT", { minimumFractionDigits: 2 });
+  return n.toLocaleString("it-CH", { minimumFractionDigits: 2 });
 }
 
 function defaultDueDate() {
@@ -127,7 +127,7 @@ export function InvoiceForm({
             <option value="">Nessuno — fattura manuale</option>
             {clientQuotes.map((q) => (
               <option key={q.id} value={q.id}>
-                {q.number} — €{money(q.total)}
+                {q.number} — CHF {money(q.total)}
               </option>
             ))}
           </select>
@@ -151,7 +151,7 @@ export function InvoiceForm({
                 type="number"
                 min={0}
                 step="0.01"
-                placeholder="Importo €"
+                placeholder="Importo CHF"
                 value={item.amount || ""}
                 onChange={(e) => updateItem(i, { amount: Number(e.target.value) })}
                 className={inputClass}
@@ -180,7 +180,7 @@ export function InvoiceForm({
       <div className="rounded-md border border-fog bg-sunken p-3 text-right">
         <span className="text-sm text-ink2">Totale: </span>
         <span className="font-display text-base font-bold tabular-nums text-ink">
-          €{money(total)}
+          CHF {money(total)}
         </span>
       </div>
 

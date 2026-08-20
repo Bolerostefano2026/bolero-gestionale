@@ -1,10 +1,12 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { Users, CalendarClock, FileText, Wrench, AlertTriangle } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasPermission } from "@/lib/permissions";
 import { StatCard } from "@/components/ui/stat-card";
 import { Badge } from "@/components/ui/badge";
+import { AiBriefing, AiBriefingSkeleton } from "@/components/dashboard/ai-briefing";
 import { APPOINTMENT_STATUS, APPOINTMENT_TYPE } from "@/lib/labels";
 import type { Prisma } from "@prisma/client";
 
@@ -70,6 +72,12 @@ export default async function DashboardPage() {
         <p className="mt-1 text-sm text-ink2">
           Ecco il quadro operativo di oggi.
         </p>
+      </div>
+
+      <div className="mb-6">
+        <Suspense fallback={<AiBriefingSkeleton />}>
+          <AiBriefing />
+        </Suspense>
       </div>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">

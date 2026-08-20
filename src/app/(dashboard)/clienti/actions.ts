@@ -85,6 +85,24 @@ export async function deleteClient(clientId: string) {
     throw new Error("Permesso negato");
   }
 
+  // Preventivi e fatture sono documenti fiscali soggetti a conservazione
+  // decennale: il database rifiuta la cancellazione a cascata, qui traduciamo
+  // il vincolo in un messaggio comprensibile.
+  const [quotes, invoices] = await Promise.all([
+    prisma.quote.count({ where: { clientId } }),
+    prisma.invoice.count({ where: { clientId } }),
+  ]);
+
+  if (quotes > 0 || invoices > 0) {
+    const parti = [
+      quotes > 0 ? `${quotes} ${quotes === 1 ? "preventivo" : "preventivi"}` : null,
+      invoices > 0 ? `${invoices} ${invoices === 1 ? "fattura" : "fatture"}` : null,
+    ].filter(Boolean);
+    throw new Error(
+      `Impossibile eliminare: il cliente ha ${parti.join(" e ")}. I documenti fiscali vanno conservati per legge. Imposta il cliente come "Inattivo" invece di eliminarlo.`
+    );
+  }
+
   await prisma.client.delete({ where: { id: clientId } });
 
   await prisma.auditLog.create({

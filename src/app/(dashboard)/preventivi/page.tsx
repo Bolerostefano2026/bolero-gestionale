@@ -66,7 +66,7 @@ export default async function PreventiviPage() {
                     {q.client.name} {q.client.surname}
                   </td>
                   <td className="px-4 py-2.5 tabular-nums text-ink2">
-                    €{Number(q.total).toLocaleString("it-IT", { minimumFractionDigits: 2 })}
+                    CHF {Number(q.total).toLocaleString("it-CH", { minimumFractionDigits: 2 })}
                   </td>
                   <td className="px-4 py-2.5">
                     <Badge label={s.label} tone={s.tone} />

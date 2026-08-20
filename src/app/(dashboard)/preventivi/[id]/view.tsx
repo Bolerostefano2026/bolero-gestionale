@@ -10,7 +10,7 @@ import { QUOTE_STATUS } from "@/lib/labels";
 type Item = { description: string; quantity: number; unitPrice: number };
 
 function money(n: number) {
-  return n.toLocaleString("it-IT", { minimumFractionDigits: 2 });
+  return n.toLocaleString("it-CH", { minimumFractionDigits: 2 });
 }
 
 export function QuoteView({
@@ -120,10 +120,10 @@ export function QuoteView({
                   {item.quantity}
                 </td>
                 <td className="px-4 py-2.5 text-right tabular-nums text-ink2">
-                  €{money(item.unitPrice)}
+                  CHF {money(item.unitPrice)}
                 </td>
                 <td className="px-4 py-2.5 text-right tabular-nums text-ink">
-                  €{money(item.quantity * item.unitPrice)}
+                  CHF {money(item.quantity * item.unitPrice)}
                 </td>
               </tr>
             ))}
@@ -133,19 +133,19 @@ export function QuoteView({
           <div className="ml-auto max-w-[240px] space-y-1 text-sm">
             <div className="flex justify-between text-ink2">
               <span>Subtotale</span>
-              <span className="tabular-nums">€{money(quote.subtotal)}</span>
+              <span className="tabular-nums">CHF {money(quote.subtotal)}</span>
             </div>
             <div className="flex justify-between text-ink2">
               <span>Sconto</span>
-              <span className="tabular-nums">−€{money(quote.discount)}</span>
+              <span className="tabular-nums">−CHF {money(quote.discount)}</span>
             </div>
             <div className="flex justify-between text-ink2">
               <span>IVA ({quote.vatRate}%)</span>
-              <span className="tabular-nums">€{money(vatAmount)}</span>
+              <span className="tabular-nums">CHF {money(vatAmount)}</span>
             </div>
             <div className="flex justify-between border-t border-fog pt-2 font-display text-base font-bold text-ink">
               <span>Totale</span>
-              <span className="tabular-nums">€{money(quote.total)}</span>
+              <span className="tabular-nums">CHF {money(quote.total)}</span>
             </div>
           </div>
         </div>

@@ -19,9 +19,9 @@ export default async function ClientiPage({
   const where: Prisma.ClientWhereInput = {};
   if (q) {
     where.OR = [
-      { name: { contains: q } },
-      { surname: { contains: q } },
-      { email: { contains: q } },
+      { name: { contains: q, mode: "insensitive" } },
+      { surname: { contains: q, mode: "insensitive" } },
+      { email: { contains: q, mode: "insensitive" } },
       { phone: { contains: q } },
     ];
   }

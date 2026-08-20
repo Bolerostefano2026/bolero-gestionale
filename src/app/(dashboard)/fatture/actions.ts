@@ -133,7 +133,7 @@ export async function createReminder(invoiceId: string) {
       clientId: invoice.clientId,
       invoiceId: invoice.id,
       subject: `Promemoria pagamento fattura ${invoice.number}`,
-      body: `Gentile ${invoice.client.name} ${invoice.client.surname},\n\nLe scriviamo per ricordarle che la fattura ${invoice.number} di €${Number(invoice.total).toFixed(2)} risulta ancora da saldare (scadenza: ${invoice.dueDate.toLocaleDateString("it-IT")}).\n\nLa preghiamo di provvedere al pagamento appena possibile, o di contattarci per qualsiasi chiarimento.\n\nCordiali saluti,\nBolero`,
+      body: `Gentile ${invoice.client.name} ${invoice.client.surname},\n\nLe scriviamo per ricordarle che la fattura ${invoice.number} di CHF ${Number(invoice.total).toFixed(2)} risulta ancora da saldare (scadenza: ${invoice.dueDate.toLocaleDateString("it-IT")}).\n\nLa preghiamo di provvedere al pagamento appena possibile, o di contattarci per qualsiasi chiarimento.\n\nCordiali saluti,\nBolero`,
       createdById: session.user.id,
     },
   });

@@ -26,10 +26,10 @@ non esegue nulla direttamente, crea solo una proposta che l'utente deve conferma
           const clients = await prisma.client.findMany({
             where: {
               OR: [
-                { name: { contains: query } },
-                { surname: { contains: query } },
+                { name: { contains: query, mode: "insensitive" } },
+                { surname: { contains: query, mode: "insensitive" } },
                 { phone: { contains: query } },
-                { email: { contains: query } },
+                { email: { contains: query, mode: "insensitive" } },
               ],
             },
             take: 5,

@@ -32,7 +32,7 @@ type QuoteData = {
 };
 
 function money(n: number) {
-  return n.toLocaleString("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return n.toLocaleString("it-CH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 export function QuoteForm({
@@ -141,10 +141,10 @@ export function QuoteForm({
                 value={item.unitPrice}
                 onChange={(e) => updateItem(i, { unitPrice: Number(e.target.value) })}
                 className={inputClass}
-                title="Prezzo unitario €"
+                title="Prezzo unitario CHF"
               />
               <span className="text-right text-sm tabular-nums text-ink2">
-                €{money(item.quantity * item.unitPrice)}
+                CHF {money(item.quantity * item.unitPrice)}
               </span>
               <button
                 type="button"
@@ -168,7 +168,7 @@ export function QuoteForm({
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Field label="Sconto (€)">
+        <Field label="Sconto (CHF)">
           <input
             type="number"
             name="discount"
@@ -216,19 +216,19 @@ export function QuoteForm({
       <div className="rounded-md border border-fog bg-sunken p-4 text-sm">
         <div className="flex justify-between text-ink2">
           <span>Subtotale</span>
-          <span className="tabular-nums">€{money(subtotal)}</span>
+          <span className="tabular-nums">CHF {money(subtotal)}</span>
         </div>
         <div className="flex justify-between text-ink2">
           <span>Sconto</span>
-          <span className="tabular-nums">−€{money(discount)}</span>
+          <span className="tabular-nums">−CHF {money(discount)}</span>
         </div>
         <div className="flex justify-between text-ink2">
           <span>IVA ({vatRate}%)</span>
-          <span className="tabular-nums">€{money(vatAmount)}</span>
+          <span className="tabular-nums">CHF {money(vatAmount)}</span>
         </div>
         <div className="mt-2 flex justify-between border-t border-fog pt-2 font-display text-base font-bold text-ink">
           <span>Totale</span>
-          <span className="tabular-nums">€{money(total)}</span>
+          <span className="tabular-nums">CHF {money(total)}</span>
         </div>
       </div>
 

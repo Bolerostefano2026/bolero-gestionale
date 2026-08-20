@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
 });
 
 function money(n: number) {
-  return `€ ${n.toLocaleString("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `CHF ${n.toLocaleString("it-CH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 export function QuotePdfDocument({
@@ -101,11 +101,11 @@ export function QuotePdfDocument({
           <View>
             <Text style={styles.docTitle}>Preventivo {number}</Text>
             <Text style={styles.docMeta}>
-              Data: {createdAt.toLocaleDateString("it-IT")}
+              Data: {createdAt.toLocaleDateString("it-CH")}
             </Text>
             {validUntil && (
               <Text style={styles.docMeta}>
-                Valido fino al {validUntil.toLocaleDateString("it-IT")}
+                Valido fino al {validUntil.toLocaleDateString("it-CH")}
               </Text>
             )}
           </View>
@@ -152,7 +152,7 @@ export function QuotePdfDocument({
             <Text style={styles.totalValue}>−{money(discount)}</Text>
           </View>
           <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>IVA ({vatRate}%)</Text>
+            <Text style={styles.totalLabel}>IVA {vatRate}%</Text>
             <Text style={styles.totalValue}>{money(vatAmount)}</Text>
           </View>
           <View style={styles.grandTotal}>

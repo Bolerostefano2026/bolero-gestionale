@@ -12,7 +12,7 @@ import { ReminderButton } from "./reminder-button";
 import { MarkSentButton } from "./mark-sent-button";
 
 function money(n: number) {
-  return n.toLocaleString("it-IT", { minimumFractionDigits: 2 });
+  return n.toLocaleString("it-CH", { minimumFractionDigits: 2 });
 }
 
 export default async function InvoiceDetailPage({
@@ -106,7 +106,7 @@ export default async function InvoiceDetailPage({
               <tr key={i} className="border-b border-fog last:border-0">
                 <td className="px-4 py-2.5 text-ink">{item.description}</td>
                 <td className="px-4 py-2.5 text-right tabular-nums text-ink">
-                  €{money(item.amount)}
+                  CHF {money(item.amount)}
                 </td>
               </tr>
             ))}
@@ -116,15 +116,15 @@ export default async function InvoiceDetailPage({
           <div className="ml-auto max-w-[240px] space-y-1 text-sm">
             <div className="flex justify-between text-ink2">
               <span>Totale</span>
-              <span className="tabular-nums">€{money(Number(invoice.total))}</span>
+              <span className="tabular-nums">CHF {money(Number(invoice.total))}</span>
             </div>
             <div className="flex justify-between text-ink2">
               <span>Pagato</span>
-              <span className="tabular-nums">€{money(paidTotal)}</span>
+              <span className="tabular-nums">CHF {money(paidTotal)}</span>
             </div>
             <div className="flex justify-between border-t border-fog pt-2 font-display text-base font-bold text-ink">
               <span>Residuo</span>
-              <span className="tabular-nums">€{money(remaining)}</span>
+              <span className="tabular-nums">CHF {money(remaining)}</span>
             </div>
           </div>
         </div>
@@ -151,7 +151,7 @@ export default async function InvoiceDetailPage({
                 className="flex items-center justify-between rounded-md border border-fog px-3 py-2 text-sm"
               >
                 <span className="text-ink">
-                  €{money(Number(p.amount))} · {p.method}
+                  CHF {money(Number(p.amount))} · {p.method}
                 </span>
                 <span className="text-xs text-ink3">
                   {p.paidAt.toLocaleDateString("it-IT")}

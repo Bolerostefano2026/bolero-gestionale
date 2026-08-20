@@ -6,6 +6,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasPermission } from "@/lib/permissions";
 import { notifyTitolari } from "@/lib/notify";
+import { VAT_RATE_DEFAULT } from "@/lib/config";
 
 const itemSchema = z.object({
   description: z.string().min(1),
@@ -25,7 +26,7 @@ const quoteSchema = z.object({
     }
   }),
   discount: z.coerce.number().nonnegative().default(0),
-  vatRate: z.coerce.number().nonnegative().default(22),
+  vatRate: z.coerce.number().nonnegative().default(VAT_RATE_DEFAULT),
   notes: z.string().optional(),
   validUntil: z.string().optional(),
 });

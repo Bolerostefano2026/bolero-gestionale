@@ -3,8 +3,13 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  // Connessione pooled (transaction mode) usata dall'app a runtime: regge molte
+  // richieste serverless contemporanee.
+  url       = env("DATABASE_URL")
+  // Connessione diretta usata SOLO da migrazioni e introspezione, che richiedono
+  // una sessione persistente e non funzionano attraverso il pooler in transaction mode.
+  directUrl = env("DIRECT_URL")
 }
 
 // ── Fase 1: Auth, Utenti, Ruoli ──────────────────────────────
@@ -142,13 +147,13 @@ model Quote {
   id          String        @id @default(uuid())
   number      String        @unique
   clientId    String
-  client      Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  client      Client        @relation(fields: [clientId], references: [id], onDelete: Restrict)
   status      QuoteStatus   @default(BOZZA)
   version     Int           @default(1)
   items       Json          @default("[]")
   subtotal    Decimal       @default(0)
   discount    Decimal       @default(0)
-  vatRate     Decimal       @default(22)
+  vatRate     Decimal       @default(8.1)
   total       Decimal       @default(0)
   notes       String?
   validUntil  DateTime?
@@ -328,7 +333,7 @@ model Invoice {
   id         String        @id @default(uuid())
   number     String        @unique
   clientId   String
-  client     Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  client     Client        @relation(fields: [clientId], references: [id], onDelete: Restrict)
   quoteId    String?
   quote      Quote?        @relation(fields: [quoteId], references: [id])
   projectId  String?

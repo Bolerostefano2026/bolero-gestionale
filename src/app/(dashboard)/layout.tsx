@@ -3,6 +3,7 @@ import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { UserMenu } from "@/components/layout/user-menu";
 import { NotificationBell } from "@/components/layout/notification-bell";
+import { CommandPalette } from "@/components/layout/command-palette";
 
 export default async function DashboardLayout({
   children,
@@ -30,14 +31,20 @@ export default async function DashboardLayout({
 
       <div className="flex min-h-screen flex-1 flex-col">
         <header className="flex h-14 shrink-0 items-center justify-between border-b border-fog bg-surface px-4 md:px-6">
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 items-center gap-2">
             <MobileNav />
             <span className="font-display text-base font-extrabold uppercase tracking-widest text-copper md:hidden">
               Bolero
             </span>
+            <div className="hidden sm:block">
+              <CommandPalette />
+            </div>
           </div>
           {user && (
             <div className="flex items-center gap-1">
+              <div className="sm:hidden">
+                <CommandPalette />
+              </div>
               <NotificationBell />
               <UserMenu name={user.name ?? ""} roleLabel={user.roleLabel} />
             </div>
