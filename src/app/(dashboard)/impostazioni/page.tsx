@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Settings, Ruler, Plug, ChevronRight } from "lucide-react";
+import { Settings, Ruler, Plug, ChevronRight, User } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasPermission } from "@/lib/permissions";
@@ -42,6 +42,22 @@ export default async function ImpostazioniPage() {
           </p>
         </div>
       </div>
+
+      <Link
+        href="/impostazioni/profilo"
+        className="mb-6 flex items-center justify-between rounded-lg border border-fog bg-surface p-5 transition hover:border-copper"
+      >
+        <div className="flex items-center gap-3">
+          <span className="flex h-9 w-9 items-center justify-center rounded-md bg-copper-bg text-copper">
+            <User size={17} />
+          </span>
+          <div>
+            <p className="text-sm font-semibold text-ink">Profilo personale</p>
+            <p className="text-xs text-ink2">Cambia nome, password e foto profilo</p>
+          </div>
+        </div>
+        <ChevronRight size={16} className="text-ink3" />
+      </Link>
 
       <Link
         href="/impostazioni/prodotti"

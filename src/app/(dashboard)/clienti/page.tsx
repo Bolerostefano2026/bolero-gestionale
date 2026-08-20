@@ -43,15 +43,26 @@ export default async function ClientiPage({
             {clients.length} {clients.length === 1 ? "cliente" : "clienti"}
           </p>
         </div>
-        {canWrite && (
-          <Link
-            href="/clienti/nuovo"
-            className="flex items-center gap-1.5 rounded-md bg-copper px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-copper-lt"
-          >
-            <Plus size={15} />
-            Nuovo cliente
-          </Link>
-        )}
+        <div className="flex items-center gap-2">
+          {hasPermission(session?.user.permissions, "clients:read_all") && (
+            <a
+              href="/api/export/clienti"
+              className="flex items-center gap-1.5 rounded-md border border-fog px-3.5 py-2 text-sm font-semibold text-ink2 transition hover:border-copper hover:text-copper"
+              download
+            >
+              ↓ CSV
+            </a>
+          )}
+          {canWrite && (
+            <Link
+              href="/clienti/nuovo"
+              className="flex items-center gap-1.5 rounded-md bg-copper px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-copper-lt"
+            >
+              <Plus size={15} />
+              Nuovo cliente
+            </Link>
+          )}
+        </div>
       </div>
 
       <form className="mb-4 flex flex-wrap items-center gap-2">

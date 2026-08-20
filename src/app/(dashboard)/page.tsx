@@ -29,6 +29,18 @@ export default async function DashboardPage() {
     ...(canSeeAllAppointments ? {} : { assignedToId: user.id }),
   };
 
+  // Ultimi 6 mesi per il grafico fatturato
+  const sei = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date();
+    d.setDate(1);
+    d.setMonth(d.getMonth() - (5 - i));
+    return { year: d.getFullYear(), month: d.getMonth() };
+  });
+  const fatturatoRange = new Date();
+  fatturatoRange.setMonth(fatturatoRange.getMonth() - 5);
+  fatturatoRange.setDate(1);
+  fatturatoRange.setHours(0, 0, 0, 0);
+
   const [
     clientCount,
     todaysAppointments,
@@ -37,6 +49,7 @@ export default async function DashboardPage() {
     userCount,
     overdueInvoices,
     staleClients,
+    fattureGrafico,
   ] = await Promise.all([
     prisma.client.count(),
     prisma.appointment.findMany({
@@ -61,7 +74,23 @@ export default async function DashboardPage() {
       orderBy: { updatedAt: "asc" },
       take: 5,
     }),
+    canSeeInvoices
+      ? prisma.invoice.findMany({
+          where: { status: "PAGATA", issuedAt: { gte: fatturatoRange } },
+          select: { total: true, issuedAt: true },
+        })
+      : Promise.resolve([]),
   ]);
+
+  // Aggrega fatturato per mese
+  const MESI_IT = ["Gen","Feb","Mar","Apr","Mag","Giu","Lug","Ago","Set","Ott","Nov","Dic"];
+  const fatturatoMensile = sei.map(({ year, month }) => {
+    const totale = fattureGrafico
+      .filter((f) => f.issuedAt.getFullYear() === year && f.issuedAt.getMonth() === month)
+      .reduce((sum, f) => sum + Number(f.total), 0);
+    return { label: MESI_IT[month], totale };
+  });
+  const maxFatturato = Math.max(...fatturatoMensile.map((m) => m.totale), 1);
 
   return (
     <div>
@@ -106,6 +135,63 @@ export default async function DashboardPage() {
           <StatCard label="Utenti attivi" value={userCount} icon={Users} tone="success" />
         )}
       </div>
+
+      {canSeeInvoices && (
+        <div className="mt-8 rounded-lg border border-fog bg-surface p-6">
+          <h2 className="mb-4 font-display text-sm font-bold uppercase tracking-wide text-ink">
+            Fatturato mensile — ultimi 6 mesi (CHF)
+          </h2>
+          <svg viewBox="0 0 600 160" className="w-full" aria-label="Grafico fatturato mensile">
+            {/* Linee guida orizzontali */}
+            {[0, 25, 50, 75, 100].map((pct) => (
+              <line
+                key={pct}
+                x1="40" y1={130 - pct * 1.1}
+                x2="590" y2={130 - pct * 1.1}
+                stroke="currentColor" strokeOpacity="0.08" strokeWidth="1"
+              />
+            ))}
+            {/* Barre */}
+            {fatturatoMensile.map((m, i) => {
+              const barW = 60;
+              const gap = 27;
+              const x = 50 + i * (barW + gap);
+              const h = Math.max((m.totale / maxFatturato) * 110, m.totale > 0 ? 4 : 0);
+              const y = 130 - h;
+              return (
+                <g key={i}>
+                  <rect
+                    x={x} y={y} width={barW} height={h}
+                    rx="4" fill="#c8914a" fillOpacity={m.totale > 0 ? "0.85" : "0.15"}
+                  />
+                  {m.totale > 0 && (
+                    <text x={x + barW / 2} y={y - 4} textAnchor="middle" fontSize="9" fill="currentColor" fillOpacity="0.7">
+                      {m.totale >= 1000 ? `${(m.totale / 1000).toFixed(1)}k` : m.totale.toFixed(0)}
+                    </text>
+                  )}
+                  <text x={x + barW / 2} y={148} textAnchor="middle" fontSize="10" fill="currentColor" fillOpacity="0.6">
+                    {m.label}
+                  </text>
+                </g>
+              );
+            })}
+          </svg>
+          <div className="mt-2 flex gap-6 text-xs text-ink2">
+            <span>
+              Totale 6 mesi:{" "}
+              <strong className="text-ink">
+                CHF {fatturatoMensile.reduce((s, m) => s + m.totale, 0).toLocaleString("it-CH", { minimumFractionDigits: 2 })}
+              </strong>
+            </span>
+            <span>
+              Media mensile:{" "}
+              <strong className="text-ink">
+                CHF {(fatturatoMensile.reduce((s, m) => s + m.totale, 0) / 6).toLocaleString("it-CH", { minimumFractionDigits: 2 })}
+              </strong>
+            </span>
+          </div>
+        </div>
+      )}
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
         <div className="rounded-lg border border-fog bg-surface p-6">

@@ -1,12 +1,25 @@
 import { generateText, stepCountIs, tool } from "ai";
-import { createAnthropic } from "@ai-sdk/anthropic";
+import { createOpenAI } from "@ai-sdk/openai";
 import { z } from "zod";
 import { AGENTS } from "./agents";
 import type { Session } from "next-auth";
 
-const ORCHESTRATOR_SYSTEM_PROMPT = `Sei l'AI Orchestrator di BOLERO, il gestionale interno di
+function buildSystemPrompt() {
+  const now = new Date();
+  const dataOra = now.toLocaleString("it-CH", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Zurich",
+  });
+  return `Sei l'AI Orchestrator di BOLERO, il gestionale interno di
 un'azienda che si occupa di montaggio, tende, pergole e pergotende. Parli in italiano, in modo
 diretto e professionale.
+
+Data e ora attuale: ${dataOra} (fuso orario Europa/Zurigo)
 
 Tu stesso non hai strumenti per leggere o modificare dati: il tuo compito è capire cosa serve
 all'utente e delegare al sub-agent specializzato giusto tramite lo strumento "delegate".
@@ -18,6 +31,7 @@ per trovare il cliente, poi al calendar agent per fissare l'appuntamento). Dopo 
 le risposte dei sub-agent, sintetizza per l'utente in 2-4 frasi cosa hai scoperto o proposto.
 Se un sub-agent ha creato una proposta in attesa di conferma, invita l'utente a confermarla o
 modificarla dall'interfaccia: non puoi eseguirla tu.`;
+}
 
 function extractPendingActionIds(steps: Awaited<ReturnType<typeof generateText>>["steps"]) {
   const ids: string[] = [];
@@ -40,16 +54,14 @@ export async function runOrchestrator(
   message: string,
   session: Session["user"]
 ): Promise<OrchestratorResult> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    throw new Error(
-      "AI non configurata: manca ANTHROPIC_API_KEY nel file .env. Vedi Impostazioni → Integrazioni."
-    );
-  }
+  const ollamaBase = process.env.OLLAMA_BASE_URL ?? "http://localhost:11434/v1";
+  const modelId = process.env.OLLAMA_MODEL ?? "llama3.1:latest";
 
-  const anthropic = createAnthropic({ apiKey });
-  const modelId = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-5-20250929";
-  const model = anthropic(modelId);
+  const ollama = createOpenAI({
+    baseURL: ollamaBase,
+    apiKey: "ollama",
+  });
+  const model = ollama(modelId);
 
   const pendingActionIds: string[] = [];
   // I sub-agent fanno chiamate proprie: i token vanno sommati a quelli
@@ -88,7 +100,7 @@ export async function runOrchestrator(
 
   const result = await generateText({
     model,
-    system: ORCHESTRATOR_SYSTEM_PROMPT,
+    system: buildSystemPrompt(),
     prompt: message,
     tools: { delegate: delegateTool },
     stopWhen: stepCountIs(6),
