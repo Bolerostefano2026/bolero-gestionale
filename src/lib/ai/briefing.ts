@@ -3,6 +3,7 @@ import { createAnthropic } from "@ai-sdk/anthropic";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { WORKFLOW_STAGE_LABEL, QUOTE_STATUS, APPOINTMENT_TYPE } from "@/lib/labels";
+import { money } from "@/lib/config";
 
 const STALE_PROJECT_DAYS = 10;
 const STALE_QUOTE_DAYS = 7;
@@ -91,14 +92,14 @@ export async function collectSnapshot() {
   const giorniDa = (d: Date) => Math.floor((now.getTime() - d.getTime()) / 86400000);
 
   return {
-    dataOdierna: now.toLocaleDateString("it-IT", {
+    dataOdierna: now.toLocaleDateString("it-CH", {
       weekday: "long",
       day: "numeric",
       month: "long",
       year: "numeric",
     }),
     appuntamentiOggi: appuntamentiOggi.map((a) => ({
-      ora: a.scheduledAt.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" }),
+      ora: a.scheduledAt.toLocaleTimeString("it-CH", { hour: "2-digit", minute: "2-digit" }),
       tipo: APPOINTMENT_TYPE[a.type] ?? a.type,
       cliente: `${a.client.name} ${a.client.surname}`,
       indirizzo: a.address ?? undefined,
@@ -108,7 +109,7 @@ export async function collectSnapshot() {
       id: q.id,
       numero: q.number,
       cliente: `${q.client.name} ${q.client.surname}`,
-      importo: Number(q.total),
+      importo: money(Number(q.total)),
       stato: QUOTE_STATUS[q.status]?.label ?? q.status,
       fermoDaGiorni: giorniDa(q.updatedAt),
     })),
@@ -123,7 +124,7 @@ export async function collectSnapshot() {
       id: i.id,
       numero: i.number,
       cliente: `${i.client.name} ${i.client.surname}`,
-      residuo: Number(i.total) - i.payments.reduce((s, p) => s + Number(p.amount), 0),
+      residuo: money(Number(i.total) - i.payments.reduce((s, p) => s + Number(p.amount), 0)),
       giorniDiRitardo: giorniDa(i.dueDate),
     })),
     leadSenzaPreventivo: clientiSenzaSeguito.map((c) => ({
@@ -224,6 +225,12 @@ REGOLA ASSOLUTA — non inventare nulla:
   Gli <id> devi prenderli dal JSON, mai inventarli. Se non hai un id, usa il percorso generico
   oppure ometti il link.
 
+VALUTA — l'azienda è SVIZZERA:
+- Tutti gli importi sono in FRANCHI SVIZZERI. Scrivi sempre "CHF" prima della cifra,
+  mai il simbolo dell'euro. Esempio corretto: CHF 3'318.40 — mai 3.318,40€.
+- Usa l'apostrofo come separatore delle migliaia e il punto per i decimali,
+  come si scrive in Svizzera.
+
 Regole di contenuto:
 - Cita sempre dati concreti presi dal JSON: nomi clienti, numeri documento, importi, giorni.
 - Ordina per impatto economico e urgenza reale: soldi non incassati e clienti che si stanno
@@ -246,7 +253,7 @@ Regole di contenuto:
   for (const f of snapshot.fattureScadute.slice(0, 2)) {
     priorita.push({
       titolo: `Sollecitare pagamento ${f.numero}`,
-      motivo: `${f.cliente} — CHF ${f.residuo.toLocaleString("it-CH")} in ritardo di ${f.giorniDiRitardo} giorni`,
+      motivo: `${f.cliente} — ${f.residuo} in ritardo di ${f.giorniDiRitardo} giorni`,
       urgenza: "alta",
       link: `/fatture/${f.id}`,
     });
@@ -254,7 +261,7 @@ Regole di contenuto:
   for (const q of snapshot.preventiviFermi.slice(0, 2)) {
     priorita.push({
       titolo: `Ricontattare per ${q.numero}`,
-      motivo: `${q.cliente} — CHF ${q.importo.toLocaleString("it-CH")}, fermo da ${q.fermoDaGiorni} giorni`,
+      motivo: `${q.cliente} — ${q.importo}, fermo da ${q.fermoDaGiorni} giorni`,
       urgenza: "alta",
       link: `/preventivi/${q.id}`,
     });
