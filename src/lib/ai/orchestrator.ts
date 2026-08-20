@@ -33,6 +33,7 @@ function extractPendingActionIds(steps: Awaited<ReturnType<typeof generateText>>
 export type OrchestratorResult = {
   reply: string;
   pendingActionIds: string[];
+  tokens: { input: number; output: number };
 };
 
 export async function runOrchestrator(
@@ -51,6 +52,9 @@ export async function runOrchestrator(
   const model = anthropic(modelId);
 
   const pendingActionIds: string[] = [];
+  // I sub-agent fanno chiamate proprie: i token vanno sommati a quelli
+  // dell'orchestratore, altrimenti il consumo reale resta invisibile.
+  const tokens = { input: 0, output: 0 };
 
   const delegateTool = tool({
     description:
@@ -74,6 +78,8 @@ export async function runOrchestrator(
         stopWhen: stepCountIs(4),
       });
 
+      tokens.input += subResult.usage?.inputTokens ?? 0;
+      tokens.output += subResult.usage?.outputTokens ?? 0;
       pendingActionIds.push(...extractPendingActionIds(subResult.steps));
 
       return { agent: agentName, reply: subResult.text };
@@ -88,5 +94,8 @@ export async function runOrchestrator(
     stopWhen: stepCountIs(6),
   });
 
-  return { reply: result.text, pendingActionIds };
+  tokens.input += result.usage?.inputTokens ?? 0;
+  tokens.output += result.usage?.outputTokens ?? 0;
+
+  return { reply: result.text, pendingActionIds, tokens };
 }

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { runOrchestrator } from "@/lib/ai/orchestrator";
 import { prisma } from "@/lib/prisma";
+import { verificaLimiti, registraConsumo } from "@/lib/ai/limits";
 
 export const runtime = "nodejs";
 
@@ -17,8 +18,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Messaggio non valido" }, { status: 400 });
   }
 
+  // Tetto giornaliero: protegge il credito Anthropic da usi anomali.
+  const limite = await verificaLimiti(session.user.id);
+  if (!limite.consentito) {
+    return NextResponse.json({ error: limite.motivo }, { status: 429 });
+  }
+
   try {
     const result = await runOrchestrator(parsed.data.message, session.user);
+    await registraConsumo(session.user.id, "chat", result.tokens);
 
     const actions =
       result.pendingActionIds.length > 0

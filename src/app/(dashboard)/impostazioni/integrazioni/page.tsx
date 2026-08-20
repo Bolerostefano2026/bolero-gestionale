@@ -43,8 +43,8 @@ const INTEGRATIONS = [
     name: "Email transazionali (Resend)",
     description:
       "Invio reale dei promemoria approvati e delle comunicazioni al cliente. Finché non è connesso, i promemoria restano visibili in coda ma non vengono recapitati.",
-    envVar: "RESEND_API_KEY",
-    connected: () => Boolean(process.env.RESEND_API_KEY),
+    envVar: "RESEND_API_KEY + EMAIL_MITTENTE",
+    connected: () => Boolean(process.env.RESEND_API_KEY && process.env.EMAIL_MITTENTE),
   },
 ];
 

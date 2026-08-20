@@ -63,6 +63,10 @@ export async function createMeasurement(formData: FormData) {
       productId: parsed.data.productId,
       templateId: parsed.data.templateId,
       data: data as Prisma.InputJsonValue,
+      // Congela la scheda usata per questo rilievo: se il titolare modificherà
+      // i campi del prodotto, questa misurazione resterà comunque leggibile.
+      fieldsSnapshot: template.fields as Prisma.InputJsonValue,
+      templateVersion: template.version,
       photos: photos as unknown as Prisma.InputJsonValue,
       notes: parsed.data.notes,
       createdById: session.user.id,

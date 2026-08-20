@@ -31,7 +31,17 @@ export default async function MeasurementDetailPage({
 
   if (!measurement) notFound();
 
-  const fields = measurement.template.fields as unknown as FieldDef[];
+  // Si usa la scheda congelata al momento del rilievo, così i dati restano
+  // leggibili anche se il prodotto è stato ridefinito nel frattempo. Il
+  // template corrente serve solo alle misurazioni registrate prima di questa
+  // modifica, che non hanno ancora la copia.
+  const snapshot = measurement.fieldsSnapshot as unknown as FieldDef[] | null;
+  const fields =
+    snapshot && snapshot.length > 0
+      ? snapshot
+      : (measurement.template.fields as unknown as FieldDef[]);
+  const schedaModificata =
+    snapshot !== null && measurement.templateVersion !== measurement.template.version;
   const data = measurement.data as Record<string, unknown>;
   const photos = measurement.photos as { url: string }[];
   const canWrite = hasPermission(session?.user.permissions, "measurements:write");
@@ -74,6 +84,13 @@ export default async function MeasurementDetailPage({
         <h2 className="mb-4 font-display text-sm font-bold uppercase tracking-wide text-ink">
           Misure rilevate
         </h2>
+        {schedaModificata && (
+          <p className="mb-4 rounded-md bg-warn-bg px-3 py-2 text-xs text-warn">
+            La scheda di misurazione di questo prodotto è stata modificata dopo il
+            rilievo. Qui sotto vedi i campi com&apos;erano quando le misure sono state
+            prese.
+          </p>
+        )}
         {fields.length === 0 ? (
           <p className="text-sm text-ink3">Nessun campo definito per questa scheda.</p>
         ) : (

@@ -6,6 +6,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasPermission } from "@/lib/permissions";
 import { notifyTitolari } from "@/lib/notify";
+import { inviaEmail, type EsitoInvio } from "@/lib/email";
 
 async function requireWrite() {
   const session = await auth();
@@ -149,16 +150,46 @@ export async function createReminder(invoiceId: string) {
   return draft.id;
 }
 
-export async function approveReminder(draftId: string) {
+/**
+ * Approva un promemoria e tenta l'invio reale.
+ *
+ * Lo stato diventa INVIATA solo se l'email è partita davvero. Se il servizio
+ * email non è configurato, o l'invio fallisce, resta APPROVATA e il chiamante
+ * riceve il motivo: il gestionale non deve far credere al titolare di aver
+ * sollecitato un cliente che invece non ha ricevuto nulla.
+ */
+export async function approveReminder(draftId: string): Promise<{
+  inviata: boolean;
+  motivo?: string;
+}> {
   const session = await auth();
   if (!hasPermission(session?.user.permissions, "invoices:approve_reminder")) {
     throw new Error("Permesso negato");
   }
 
+  const draft = await prisma.emailDraft.findUniqueOrThrow({
+    where: { id: draftId },
+    include: { client: { select: { email: true, name: true, surname: true } } },
+  });
+
+  let esito: EsitoInvio;
+  if (!draft.client.email) {
+    esito = {
+      inviata: false,
+      motivo: `${draft.client.name} ${draft.client.surname} non ha un indirizzo email in anagrafica.`,
+    };
+  } else {
+    esito = await inviaEmail({
+      a: draft.client.email,
+      oggetto: draft.subject,
+      testo: draft.body,
+    });
+  }
+
   await prisma.emailDraft.update({
     where: { id: draftId },
     data: {
-      status: "INVIATA",
+      status: esito.inviata ? "INVIATA" : "APPROVATA",
       approvedById: session!.user.id,
       decidedAt: new Date(),
     },
@@ -169,12 +200,16 @@ export async function approveReminder(draftId: string) {
       userId: session!.user.id,
       entityType: "email_draft",
       entityId: draftId,
-      action: "approve_and_send",
+      action: esito.inviata ? "approve_and_send" : "approve_only",
+      changes: esito.inviata ? undefined : { motivo: esito.motivo },
       source: "manual",
     },
   });
 
   revalidatePath("/fatture/promemoria");
+  return esito.inviata
+    ? { inviata: true }
+    : { inviata: false, motivo: esito.motivo };
 }
 
 export async function rejectReminder(draftId: string) {

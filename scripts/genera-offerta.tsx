@@ -138,7 +138,7 @@ function Offerta() {
             <Text style={s.pName}>_______________________________</Text>
             <Text style={s.pLine}>_______________________________</Text>
             <Text style={s.pLine}>_______________________________</Text>
-            <Text style={s.pLine}>All'attenzione di:</Text>
+            <Text style={s.pLine}>All&apos;attenzione di:</Text>
             <Text style={s.pLine}>_______________________________</Text>
           </View>
         </View>
