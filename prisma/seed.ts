@@ -314,7 +314,201 @@ async function main() {
     for (const data of apptData) {
       await prisma.appointment.create({ data }).catch(() => null);
     }
+
+    // ── Prodotti & Template misure ───────────────────────────────────────────
+    const tenda = await prisma.product.upsert({
+      where: { id: "prod-tenda-bracci" },
+      update: {},
+      create: {
+        id: "prod-tenda-bracci",
+        name: "Tenda a bracci",
+        description: "Tende da sole a bracci estensibili",
+        category: "Tende",
+        sortOrder: 1,
+      },
+    });
+
+    const zanzariera = await prisma.product.upsert({
+      where: { id: "prod-zanzariera" },
+      update: {},
+      create: {
+        id: "prod-zanzariera",
+        name: "Zanzariera",
+        description: "Zanzariere plissé, a rullo e scorrevoli",
+        category: "Zanzariere",
+        sortOrder: 2,
+      },
+    });
+
+    const pergola = await prisma.product.upsert({
+      where: { id: "prod-pergola" },
+      update: {},
+      create: {
+        id: "prod-pergola",
+        name: "Pergola bioclimatica",
+        description: "Pergole con lamelle orientabili in alluminio",
+        category: "Pergole",
+        sortOrder: 3,
+      },
+    });
+
+    const tmplTenda = await prisma.measurementTemplate.upsert({
+      where: { id: "tmpl-tenda" },
+      update: {},
+      create: {
+        id: "tmpl-tenda",
+        productId: tenda.id,
+        name: "Rilievo tenda a bracci",
+        fields: [
+          { key: "larghezza", label: "Larghezza (cm)", type: "number", required: true },
+          { key: "sporgenza", label: "Sporgenza (cm)", type: "number", required: true },
+          { key: "altezza_montaggio", label: "Altezza montaggio (cm)", type: "number", required: false },
+          { key: "parete", label: "Tipo parete", type: "select", options: ["Mattone", "Calcestruzzo", "Legno", "Metallo"], required: true },
+          { key: "motorizzazione", label: "Motorizzazione", type: "boolean", required: false },
+          { key: "note", label: "Note installazione", type: "text", required: false },
+        ],
+        version: 1,
+      },
+    });
+
+    const tmplZanzariera = await prisma.measurementTemplate.upsert({
+      where: { id: "tmpl-zanzariera" },
+      update: {},
+      create: {
+        id: "tmpl-zanzariera",
+        productId: zanzariera.id,
+        name: "Rilievo zanzariera",
+        fields: [
+          { key: "larghezza", label: "Larghezza luce (cm)", type: "number", required: true },
+          { key: "altezza", label: "Altezza luce (cm)", type: "number", required: true },
+          { key: "tipo", label: "Tipo", type: "select", options: ["Plissé", "A rullo", "Scorrevole"], required: true },
+          { key: "apertura", label: "Apertura", type: "select", options: ["Sinistra", "Destra", "Centro"], required: false },
+          { key: "note", label: "Note", type: "text", required: false },
+        ],
+        version: 1,
+      },
+    });
+
+    // ── Misure di esempio ────────────────────────────────────────────────────
+    const misura1 = await prisma.measurement.create({
+      data: {
+        clientId: marco.id,
+        productId: tenda.id,
+        templateId: tmplTenda.id,
+        data: { larghezza: 420, sporgenza: 300, altezza_montaggio: 250, parete: "Calcestruzzo", motorizzazione: true },
+        fieldsSnapshot: tmplTenda.fields as object,
+        templateVersion: 1,
+        notes: "Terrazzo lato sud. Spazio libero sufficiente. Cavi elettrici già predisposti per motore.",
+        createdById: collaboratore.id,
+        createdAt: daysAgo(10),
+      },
+    }).catch(() => null);
+
+    await prisma.measurement.create({
+      data: {
+        clientId: giulia.id,
+        productId: zanzariera.id,
+        templateId: tmplZanzariera.id,
+        data: { larghezza: 82, altezza: 118, tipo: "Plissé", apertura: "Sinistra" },
+        fieldsSnapshot: tmplZanzariera.fields as object,
+        templateVersion: 1,
+        notes: "Finestra camera da letto. Colore telaio: bianco RAL 9016.",
+        createdById: collaboratore.id,
+        createdAt: daysAgo(18),
+      },
+    }).catch(() => null);
+
+    // ── Progetti Workflow ────────────────────────────────────────────────────
+    await prisma.project.create({
+      data: {
+        clientId: marco.id,
+        title: "Tenda terrazzo villa Bellinzona",
+        stage: "PROGRAMMAZIONE_MONTAGGIO",
+        notes: "Tenda Markilux 6000 4x3m — motorizzazione Somfy io. Montaggio confermato.",
+        measurementId: misura1?.id,
+        createdById: titolare.id,
+        createdAt: daysAgo(25),
+      },
+    }).catch(() => null);
+
+    await prisma.project.create({
+      data: {
+        clientId: giulia.id,
+        title: "Zanzariere appartamento Lugano",
+        stage: "FATTURAZIONE",
+        notes: "4 zanzariere plissé + 2 a rullo. Montaggio completato. Fattura inviata.",
+        createdById: ufficio.id,
+        createdAt: daysAgo(30),
+      },
+    }).catch(() => null);
+
+    await prisma.project.create({
+      data: {
+        clientId: anna?.id ?? giulia.id,
+        title: "Pergola bioclimatica Lugano",
+        stage: "PREVENTIVO",
+        notes: "Cliente interessata a pergola 5x4m. Preventivo in preparazione.",
+        createdById: titolare.id,
+        createdAt: daysAgo(5),
+      },
+    }).catch(() => null);
+
+    if (roberto) {
+      await prisma.project.create({
+        data: {
+          clientId: roberto.id,
+          title: "Persiane motorizzate Studio Conti",
+          stage: "APPROVAZIONE",
+          notes: "8 persiane alluminio motorizzate. Preventivo inviato, in attesa risposta.",
+          createdById: titolare.id,
+          createdAt: daysAgo(7),
+        },
+      }).catch(() => null);
+    }
   }
+
+  // ── Notifiche di esempio ────────────────────────────────────────────────
+  await prisma.notification.createMany({
+    data: [
+      {
+        userId: titolare.id,
+        type: "invoice_overdue",
+        title: "Fattura scaduta",
+        body: "FT-2026-0096 — Marco Bianchi — scaduta da 18 giorni (CHF 858.75)",
+        link: "/fatture",
+        read: false,
+        createdAt: daysAgo(1),
+      },
+      {
+        userId: titolare.id,
+        type: "quote_pending",
+        title: "Preventivo in attesa",
+        body: "PRV-2026-0098 — Marco Bianchi — nessuna risposta da 12 giorni",
+        link: "/preventivi",
+        read: false,
+        createdAt: daysAgo(2),
+      },
+      {
+        userId: titolare.id,
+        type: "appointment_today",
+        title: "Sopralluogo oggi alle 10:30",
+        body: "Giulia Ferrari — Via Roma 10, Lugano",
+        link: "/calendario",
+        read: true,
+        createdAt: daysAgo(0),
+      },
+      {
+        userId: ufficio.id,
+        type: "quote_approved",
+        title: "Preventivo approvato",
+        body: "PRV-2026-0100 — Giulia Ferrari ha confermato",
+        link: "/preventivi",
+        read: false,
+        createdAt: daysAgo(1),
+      },
+    ],
+    skipDuplicates: true,
+  }).catch(() => null);
 
   console.log("\n✅ Seed completato.\n");
   console.log("╔══════════════════════════════════════════╗");
@@ -328,10 +522,13 @@ async function main() {
   console.log("║                Campo2026!                 ║");
   console.log("╚══════════════════════════════════════════╝");
   console.log("\n📊 Dati di test:");
-  console.log("   • 6 clienti (2 attivi, 1 in lavorazione, 1 lead×2, 1 chiuso)");
+  console.log("   • 6 clienti (2 attivi, 1 in lavorazione, 2 lead, 1 chiuso)");
   console.log("   • 4 preventivi (bozza, inviato, in attesa, approvato)");
   console.log("   • 3 fatture (1 pagata, 1 inviata, 1 scaduta da 18gg)");
-  console.log("   • 3 appuntamenti (oggi 10:30, +3gg montaggio, +7gg sopralluogo)");
+  console.log("   • 3 appuntamenti (oggi 10:30, +3gg montaggio, +7gg incontro)");
+  console.log("   • 3 prodotti + 2 template misure");
+  console.log("   • 2 misurazioni rilevate");
+  console.log("   • 4 progetti workflow in varie fasi");
 }
 
 main()
