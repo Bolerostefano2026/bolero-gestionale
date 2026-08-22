@@ -4,7 +4,5 @@
       "path": "/api/cron/daily-alerts",
       "schedule": "0 7 * * *"
     }
-  ],
-  "buildCommand": "npm run build",
-  "framework": "nextjs"
+  ]
 }
