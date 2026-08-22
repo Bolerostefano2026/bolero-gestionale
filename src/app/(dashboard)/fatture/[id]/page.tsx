@@ -49,7 +49,7 @@ export default async function InvoiceDetailPage({
   const items = invoice.items as { description: string; amount: number }[];
   const paidTotal = invoice.payments.reduce((sum, p) => sum + Number(p.amount), 0);
   const remaining = Math.max(Number(invoice.total) - paidTotal, 0);
-  const overdue = invoice.status === "INVIATA" && invoice.dueDate < new Date();
+  const overdue = invoice.status === "SCADUTA";
   const s = INVOICE_STATUS[invoice.status];
 
   return (

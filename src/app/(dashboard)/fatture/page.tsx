@@ -40,8 +40,6 @@ export default async function FatturePage({
     ];
   }
 
-  const now = new Date();
-
   const [invoices, kpi, pendingReminders] = await Promise.all([
     prisma.invoice.findMany({
       where,
@@ -58,13 +56,11 @@ export default async function FatturePage({
 
   const totalPagato = kpi.find((k) => k.status === "PAGATA")?._sum.total ?? 0;
   const totalInviato = kpi.find((k) => k.status === "INVIATA")?._sum.total ?? 0;
-  const countScadute = invoices.filter(
-    (inv) => inv.status === "INVIATA" && inv.dueDate < now
-  ).length;
+  const countScadute = kpi.find((k) => k.status === "SCADUTA")?._count.id ?? 0;
 
   const invoicesWithOverdue = invoices.map((inv) => ({
     ...inv,
-    overdue: inv.status === "INVIATA" && inv.dueDate < now,
+    overdue: inv.status === "SCADUTA",
   }));
 
   return (

@@ -13,9 +13,14 @@ export async function GET(req: Request) {
   const now = new Date();
   const alerts: string[] = [];
 
-  // 1. Fatture scadute non pagate
-  const overdueInvoices = await prisma.invoice.findMany({
+  // 1. Fatture scadute non pagate — aggiorna status a SCADUTA e notifica
+  await prisma.invoice.updateMany({
     where: { status: "INVIATA", dueDate: { lt: now } },
+    data: { status: "SCADUTA" },
+  });
+
+  const overdueInvoices = await prisma.invoice.findMany({
+    where: { status: "SCADUTA", dueDate: { lt: now } },
     include: { client: { select: { name: true, surname: true } } },
     orderBy: { dueDate: "asc" },
   });

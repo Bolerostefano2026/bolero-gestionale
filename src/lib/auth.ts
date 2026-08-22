@@ -50,18 +50,35 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
-    jwt: async ({ token, user }) => {
+    jwt: async ({ token, user, trigger }) => {
       if (user) {
         token.roleId = user.roleId;
         token.roleName = user.roleName;
         token.roleLabel = user.roleLabel;
         token.permissions = user.permissions;
       }
+      // Quando il client chiama update() dopo cambio nome/avatar, rilegge il DB
+      if (trigger === "update" && token.sub) {
+        const fresh = await prisma.user.findUnique({
+          where: { id: token.sub },
+          include: { role: true },
+        });
+        if (fresh) {
+          token.name = fresh.name;
+          token.picture = fresh.avatarUrl ?? undefined;
+          token.roleId = fresh.roleId;
+          token.roleName = fresh.role.name;
+          token.roleLabel = fresh.role.label;
+          token.permissions = (fresh.role.permissions as string[]) ?? [];
+        }
+      }
       return token;
     },
     session: async ({ session, token }) => {
       if (session.user) {
         session.user.id = token.sub!;
+        session.user.name = (token.name as string) ?? session.user.name;
+        session.user.image = (token.picture as string | undefined) ?? session.user.image;
         session.user.roleId = token.roleId as string;
         session.user.roleName = token.roleName as string;
         session.user.roleLabel = token.roleLabel as string;

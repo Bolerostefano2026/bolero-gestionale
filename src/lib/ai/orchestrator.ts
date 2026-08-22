@@ -1,4 +1,5 @@
 import { generateText, stepCountIs, tool } from "ai";
+import { createAnthropic } from "@ai-sdk/anthropic";
 import { createOpenAI } from "@ai-sdk/openai";
 import { z } from "zod";
 import { AGENTS } from "./agents";
@@ -54,14 +55,18 @@ export async function runOrchestrator(
   message: string,
   session: Session["user"]
 ): Promise<OrchestratorResult> {
-  const ollamaBase = process.env.OLLAMA_BASE_URL ?? "http://localhost:11434/v1";
-  const modelId = process.env.OLLAMA_MODEL ?? "llama3.1:latest";
-
-  const ollama = createOpenAI({
-    baseURL: ollamaBase,
-    apiKey: "ollama",
-  });
-  const model = ollama(modelId);
+  // Usa Anthropic se disponibile (produzione), Ollama come fallback locale
+  const useAnthropic = !!process.env.ANTHROPIC_API_KEY;
+  let model;
+  if (useAnthropic) {
+    const anthropic = createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    model = anthropic("claude-haiku-4-5-20251001");
+  } else {
+    const ollamaBase = process.env.OLLAMA_BASE_URL ?? "http://localhost:11434/v1";
+    const modelId = process.env.OLLAMA_MODEL ?? "llama3.1:latest";
+    const ollama = createOpenAI({ baseURL: ollamaBase, apiKey: "ollama" });
+    model = ollama(modelId);
+  }
 
   const pendingActionIds: string[] = [];
   // I sub-agent fanno chiamate proprie: i token vanno sommati a quelli
