@@ -5,9 +5,6 @@
       "schedule": "0 7 * * *"
     }
   ],
-  "build": {
-    "env": {
-      "NEXT_TURBOPACK": "0"
-    }
-  }
+  "buildCommand": "npm run build",
+  "framework": "nextjs"
 }
