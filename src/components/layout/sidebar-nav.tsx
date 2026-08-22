@@ -15,7 +15,6 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
     return canAny(...item.requireAny);
   });
 
-  // Group items
   const ungrouped = visibleItems.filter((i) => !i.group);
   const groups: Record<string, typeof visibleItems> = {};
   for (const item of visibleItems) {
@@ -39,10 +38,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
         >
           <Icon size={15} strokeWidth={1.5} />
           <span>{item.label}</span>
-          <span
-            className="ml-auto text-[9px] font-semibold tracking-widest uppercase"
-            style={{ color: "var(--sidebar-ink3)" }}
-          >
+          <span className="ml-auto text-[9px] font-semibold tracking-widest uppercase" style={{ color: "var(--sidebar-ink3)" }}>
             Presto
           </span>
         </div>
@@ -54,30 +50,12 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
         key={item.href}
         href={item.href}
         onClick={onNavigate}
-        className={cn(
-          "flex items-center gap-2.5 px-3 py-[7px] rounded-lg text-[13px] font-medium transition-all",
-        )}
-        style={
-          isActive
-            ? {
-                background: "var(--sidebar-active)",
-                color: "var(--sidebar-ink)",
-                boxShadow: "0 0 0 1px rgba(59,130,246,0.2) inset",
-              }
-            : { color: "var(--sidebar-ink2)" }
-        }
-        onMouseEnter={(e) => {
-          if (!isActive)
-            (e.currentTarget as HTMLElement).style.background = "var(--sidebar-hover)";
-        }}
-        onMouseLeave={(e) => {
-          if (!isActive) (e.currentTarget as HTMLElement).style.background = "";
-        }}
+        className={cn("nav-item flex items-center gap-2.5 px-3 py-[7px] rounded-lg text-[13px] font-medium", isActive && "nav-item-active")}
       >
         <Icon
           size={15}
           strokeWidth={isActive ? 2 : 1.5}
-          style={{ color: isActive ? "var(--copper-lt)" : "var(--sidebar-ink3)" }}
+          className="nav-item-icon"
         />
         {item.label}
       </Link>
@@ -85,20 +63,36 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   };
 
   return (
-    <nav className="flex flex-col gap-0.5">
-      {ungrouped.map(renderItem)}
-
-      {Object.entries(groups).map(([group, items]) => (
-        <div key={group} className="mt-4">
-          <p
-            className="px-3 mb-1 text-[9px] font-semibold tracking-[0.18em] uppercase"
-            style={{ color: "var(--sidebar-ink3)" }}
-          >
-            {group}
-          </p>
-          {items.map(renderItem)}
-        </div>
-      ))}
-    </nav>
+    <>
+      <style>{`
+        .nav-item {
+          color: var(--sidebar-ink2);
+          transition: background 120ms ease, color 120ms ease;
+        }
+        .nav-item:hover {
+          background: var(--sidebar-hover);
+          color: var(--sidebar-ink);
+        }
+        .nav-item .nav-item-icon { color: var(--sidebar-ink3); }
+        .nav-item:hover .nav-item-icon { color: var(--sidebar-ink2); }
+        .nav-item-active {
+          background: var(--sidebar-active) !important;
+          color: var(--sidebar-ink) !important;
+          box-shadow: 0 0 0 1px rgba(59,130,246,0.2) inset;
+        }
+        .nav-item-active .nav-item-icon { color: var(--copper-lt) !important; }
+      `}</style>
+      <nav className="flex flex-col gap-0.5">
+        {ungrouped.map(renderItem)}
+        {Object.entries(groups).map(([group, items]) => (
+          <div key={group} className="mt-4">
+            <p className="px-3 mb-1 text-[9px] font-semibold tracking-[0.18em] uppercase" style={{ color: "var(--sidebar-ink3)" }}>
+              {group}
+            </p>
+            {items.map(renderItem)}
+          </div>
+        ))}
+      </nav>
+    </>
   );
 }
