@@ -1,29 +1,29 @@
 @import "tailwindcss";
 
 :root {
-  /* Canvas */
-  --canvas:     #F0F5FF;
+  /* Canvas — bianco puro con sfumatura azzurra leggerissima */
+  --canvas:     #F7F9FF;
   --surface:    #FFFFFF;
-  --sunken:     #E6EEFE;
-  --fog:        #C8D6F2;
+  --sunken:     #EEF2FB;
+  --fog:        #D5DDF5;
 
   /* Ink */
-  --ink:        #0A1628;
-  --ink2:       #3B5280;
-  --ink3:       #7A90B8;
+  --ink:        #0D1B3E;
+  --ink2:       #3D5080;
+  --ink3:       #8A9CC4;
 
-  /* Accent — ocean blue */
+  /* Accent — blu elettrico */
   --copper:     #2563EB;
   --copper-lt:  #3B82F6;
   --copper-bg:  #EFF6FF;
 
-  /* Sidebar — deep navy */
-  --sidebar:        #0B1829;
-  --sidebar-hover:  #132033;
-  --sidebar-active: #1A3461;
-  --sidebar-ink:    #E2EBFF;
-  --sidebar-ink2:   #6B8CC4;
-  --sidebar-ink3:   #2E4870;
+  /* Sidebar — navy profondo */
+  --sidebar:        #0F1E3D;
+  --sidebar-hover:  #172848;
+  --sidebar-active: #1E3A6E;
+  --sidebar-ink:    #E8EEFF;
+  --sidebar-ink2:   #6B90D4;
+  --sidebar-ink3:   #2E4A80;
 
   /* Semantic */
   --success:    #059669;
@@ -33,29 +33,29 @@
   --danger:     #DC2626;
   --danger-bg:  #FEF2F2;
 
-  /* Shadows */
-  --shadow-xs: 0 1px 2px rgba(10,22,40,.05);
-  --shadow-sm: 0 1px 3px rgba(10,22,40,.07), 0 4px 12px rgba(10,22,40,.04);
-  --shadow-md: 0 2px 8px rgba(10,22,40,.09), 0 8px 28px rgba(10,22,40,.05);
+  /* Shadows — azzurrate, non grigie */
+  --shadow-xs: 0 1px 2px rgba(13,27,62,.04);
+  --shadow-sm: 0 1px 3px rgba(13,27,62,.06), 0 4px 14px rgba(37,99,235,.05);
+  --shadow-md: 0 2px 8px rgba(13,27,62,.08), 0 8px 28px rgba(37,99,235,.07);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --canvas:     #08101E;
-    --surface:    #0E1927;
-    --sunken:     #060D18;
-    --fog:        #1A2E4A;
+    --canvas:     #090F20;
+    --surface:    #0E1629;
+    --sunken:     #060C1A;
+    --fog:        #182040;
     --ink:        #DCE8FF;
-    --ink2:       #7090C0;
-    --ink3:       #3A547A;
+    --ink2:       #6B90C8;
+    --ink3:       #334870;
     --copper:     #3B82F6;
     --copper-lt:  #60A5FA;
     --copper-bg:  #0D1E40;
-    --sidebar:        #050D1A;
-    --sidebar-hover:  #0C1A2E;
-    --sidebar-active: #112044;
+    --sidebar:        #060C1A;
+    --sidebar-hover:  #0C1830;
+    --sidebar-active: #102248;
     --sidebar-ink:    #C0D8FF;
-    --sidebar-ink2:   #4A70A8;
+    --sidebar-ink2:   #4070A8;
     --sidebar-ink3:   #1E3860;
     --success:    #10B981;
     --success-bg: #052E20;

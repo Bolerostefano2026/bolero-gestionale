@@ -126,29 +126,32 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="Clienti totali" value={clientCount} icon={Users} tone="copper" />
+        <StatCard label="Clienti totali" value={clientCount} icon={Users} tone="copper" href="/clienti" />
         <StatCard
           label="Appuntamenti oggi"
           value={todaysAppointments.length}
           icon={CalendarClock}
+          href="/calendario"
         />
         <StatCard
           label="Preventivi in attesa"
           value={pendingQuotesCount}
           icon={FileText}
           tone="warn"
+          href="/preventivi"
         />
-        <StatCard label="Clienti in lavorazione" value={inProgressCount} icon={Wrench} />
+        <StatCard label="Clienti in lavorazione" value={inProgressCount} icon={Wrench} href="/clienti" />
         {overdueInvoices > 0 && (
           <StatCard
             label="Fatture scadute"
             value={overdueInvoices}
             icon={AlertTriangle}
             tone="warn"
+            href="/fatture"
           />
         )}
         {userCount !== null && (
-          <StatCard label="Utenti attivi" value={userCount} icon={Users} tone="success" />
+          <StatCard label="Utenti attivi" value={userCount} icon={Users} tone="success" href="/impostazioni" />
         )}
       </div>
 
