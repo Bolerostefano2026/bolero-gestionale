@@ -118,42 +118,46 @@ export function QuoteForm({
         </label>
         <div className="space-y-2">
           {items.map((item, i) => (
-            <div key={i} className="grid grid-cols-[1fr_70px_100px_90px_auto] items-center gap-2">
+            <div key={i} className="flex flex-col gap-1.5 rounded-md border border-fog bg-surface p-2 sm:grid sm:grid-cols-[1fr_70px_100px_90px_auto] sm:items-center sm:gap-2 sm:rounded-none sm:border-0 sm:bg-transparent sm:p-0">
               <input
                 placeholder="Descrizione"
                 value={item.description}
                 onChange={(e) => updateItem(i, { description: e.target.value })}
                 className={inputClass}
               />
-              <input
-                type="number"
-                min={0}
-                step="0.01"
-                value={item.quantity}
-                onChange={(e) => updateItem(i, { quantity: Number(e.target.value) })}
-                className={inputClass}
-                title="Quantità"
-              />
-              <input
-                type="number"
-                min={0}
-                step="0.01"
-                value={item.unitPrice}
-                onChange={(e) => updateItem(i, { unitPrice: Number(e.target.value) })}
-                className={inputClass}
-                title="Prezzo unitario CHF"
-              />
-              <span className="text-right text-sm tabular-nums text-ink2">
-                CHF {money(item.quantity * item.unitPrice)}
-              </span>
-              <button
-                type="button"
-                onClick={() => removeItem(i)}
-                disabled={items.length === 1}
-                className="flex h-8 w-8 items-center justify-center rounded-md text-ink3 hover:bg-danger-bg hover:text-danger disabled:opacity-30"
-              >
-                <Trash2 size={14} />
-              </button>
+              <div className="flex gap-1.5 sm:contents">
+                <input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={item.quantity}
+                  onChange={(e) => updateItem(i, { quantity: Number(e.target.value) })}
+                  className={`${inputClass} flex-1 sm:flex-none`}
+                  title="Quantità"
+                  placeholder="Qtà"
+                />
+                <input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={item.unitPrice}
+                  onChange={(e) => updateItem(i, { unitPrice: Number(e.target.value) })}
+                  className={`${inputClass} flex-1 sm:flex-none`}
+                  title="Prezzo unitario CHF"
+                  placeholder="Prezzo CHF"
+                />
+                <span className="flex items-center whitespace-nowrap text-sm tabular-nums text-ink2 sm:text-right">
+                  CHF {money(item.quantity * item.unitPrice)}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => removeItem(i)}
+                  disabled={items.length === 1}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-ink3 hover:bg-danger-bg hover:text-danger disabled:opacity-30"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
             </div>
           ))}
         </div>
