@@ -1,3 +1,5 @@
+export const revalidate = 60;
+
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { auth } from "@/lib/auth";
