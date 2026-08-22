@@ -29,33 +29,44 @@ export default async function LoginPage({
     <main className="flex min-h-screen">
       {/* Left — brand panel */}
       <div
-        className="hidden lg:flex lg:w-[44%] flex-col justify-between p-12"
-        style={{ background: "var(--ink)" }}
+        className="hidden lg:flex lg:w-[46%] flex-col justify-between p-14"
+        style={{ background: "var(--sidebar)" }}
       >
-        <div>
+        <div className="flex items-center gap-3">
           <span
-            className="font-display text-[13px] tracking-wide"
-            style={{ fontStyle: "italic", fontWeight: 300, color: "var(--copper-lt)" }}
+            className="font-display text-[28px] leading-none"
+            style={{ fontStyle: "italic", fontWeight: 300, color: "var(--sidebar-ink)" }}
           >
-            Bolero
+            B
+          </span>
+          <div style={{ width: "1px", height: "18px", background: "var(--sidebar-ink3)" }} />
+          <span
+            className="text-[9px] font-semibold tracking-[0.25em] uppercase"
+            style={{ color: "var(--sidebar-ink2)" }}
+          >
+            Gestionale
           </span>
         </div>
 
         <div>
           <p
-            className="font-display text-[42px] xl:text-5xl leading-[1.15]"
-            style={{ fontStyle: "italic", fontWeight: 300, color: "var(--canvas)" }}
+            className="font-display text-[46px] xl:text-[52px] leading-[1.1] tracking-tight"
+            style={{ fontStyle: "italic", fontWeight: 300, color: "var(--sidebar-ink)" }}
           >
             Il tuo lavoro,<br />in ordine.
           </p>
-          <p className="mt-5 text-sm leading-relaxed" style={{ color: "var(--ink3)" }}>
-            Gestionale operativo per montaggio,<br />
-            tende, pergole e serramenti — Ticino.
+          <div
+            className="mt-7 mb-1"
+            style={{ width: "32px", height: "1px", background: "var(--sidebar-ink3)" }}
+          />
+          <p className="mt-4 text-[13px] leading-relaxed" style={{ color: "var(--sidebar-ink2)" }}>
+            Serramenti, tende e pergole —<br />
+            tutto in un unico posto.
           </p>
         </div>
 
-        <p className="text-[10px] tracking-widest uppercase" style={{ color: "var(--ink3)" }}>
-          © {new Date().getFullYear()} Bolero Serramenti
+        <p className="text-[9px] tracking-[0.2em] uppercase" style={{ color: "var(--sidebar-ink3)" }}>
+          Ticino · CH
         </p>
       </div>
 
@@ -98,7 +109,7 @@ export default async function LoginPage({
                 required
                 autoFocus
                 placeholder="nome@azienda.ch"
-                className="w-full rounded-lg border border-fog bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink3 outline-none focus:border-copper focus:ring-2 focus:ring-copper/20"
+                className="w-full rounded-lg border border-fog bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink3 outline-none focus:border-copper focus:ring-2 focus:ring-copper/15"
               />
             </div>
 
@@ -115,7 +126,7 @@ export default async function LoginPage({
                 type="password"
                 required
                 placeholder="••••••••"
-                className="w-full rounded-lg border border-fog bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink3 outline-none focus:border-copper focus:ring-2 focus:ring-copper/20"
+                className="w-full rounded-lg border border-fog bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink3 outline-none focus:border-copper focus:ring-2 focus:ring-copper/15"
               />
             </div>
 

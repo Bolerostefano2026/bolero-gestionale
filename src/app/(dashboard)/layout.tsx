@@ -1,10 +1,10 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
-import { MobileNav } from "@/components/layout/mobile-nav";
 import { UserMenu } from "@/components/layout/user-menu";
 import { NotificationBell } from "@/components/layout/notification-bell";
 import { CommandPalette } from "@/components/layout/command-palette";
+import { MobileNav } from "@/components/layout/mobile-nav";
 
 export default async function DashboardLayout({
   children,
@@ -17,44 +17,60 @@ export default async function DashboardLayout({
 
   return (
     <div className="flex min-h-screen w-full">
-      {/* Sidebar desktop */}
-      <aside className="hidden w-56 shrink-0 border-r border-fog bg-surface md:flex md:flex-col">
-        {/* Brand lockup */}
-        <div className="px-6 pt-7 pb-5">
+      {/* Icon rail sidebar — desktop only */}
+      <aside
+        className="hidden md:flex md:flex-col md:w-[52px] shrink-0 z-20"
+        style={{
+          background: "var(--sidebar)",
+          borderRight: "1px solid rgba(255,255,255,0.04)",
+        }}
+      >
+        {/* Brand monogram */}
+        <div className="flex items-center justify-center h-14 shrink-0">
           <span
-            className="font-display block text-[22px] leading-none text-ink"
-            style={{ fontStyle: "italic", fontWeight: 300, letterSpacing: "-0.01em" }}
+            className="font-display text-[20px] leading-none select-none"
+            style={{ fontStyle: "italic", fontWeight: 300, color: "var(--sidebar-ink)" }}
+            title="Bolero Gestionale"
           >
-            Bolero
-          </span>
-          <span
-            className="mt-1.5 block text-[9px] font-semibold tracking-[0.22em] uppercase text-copper"
-          >
-            Gestionale
+            B
           </span>
         </div>
 
-        <div className="mx-4 mb-4 border-t border-fog" />
+        {/* Divider */}
+        <div style={{ height: "1px", background: "rgba(255,255,255,0.06)", margin: "0 10px 6px" }} />
 
-        {/* Nav */}
-        <div className="flex-1 overflow-y-auto px-2 pb-4">
+        {/* Nav icons */}
+        <div className="flex-1 flex flex-col items-center gap-0.5 py-2 px-1.5 overflow-y-auto">
           <SidebarNav />
         </div>
 
-        {/* Sidebar footer */}
-        <div className="border-t border-fog px-5 py-3">
-          <p className="text-[9px] font-semibold tracking-[0.18em] uppercase text-ink3">
-            Ticino · CH
-          </p>
+        {/* Bottom divider */}
+        <div style={{ height: "1px", background: "rgba(255,255,255,0.06)", margin: "6px 10px 0" }} />
+
+        {/* Footer label */}
+        <div className="flex items-center justify-center h-10 shrink-0">
+          <span
+            className="text-[7px] font-semibold tracking-[0.2em] uppercase select-none"
+            style={{ color: "var(--sidebar-ink3)" }}
+          >
+            CH
+          </span>
         </div>
       </aside>
 
       {/* Main column */}
       <div className="flex min-h-screen flex-1 flex-col overflow-hidden">
         {/* Top bar */}
-        <header className="flex h-12 shrink-0 items-center justify-between border-b border-fog bg-surface px-4 md:px-6">
+        <header
+          className="flex h-13 shrink-0 items-center justify-between px-5 md:px-6"
+          style={{
+            background: "var(--surface)",
+            borderBottom: "1px solid var(--fog)",
+          }}
+        >
           <div className="flex min-w-0 items-center gap-3">
             <MobileNav />
+            {/* Mobile brand */}
             <span
               className="font-display text-xl leading-none text-ink md:hidden"
               style={{ fontStyle: "italic", fontWeight: 300 }}
@@ -65,6 +81,7 @@ export default async function DashboardLayout({
               <CommandPalette />
             </div>
           </div>
+
           {user && (
             <div className="flex items-center gap-1">
               <div className="sm:hidden">

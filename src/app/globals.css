@@ -1,72 +1,93 @@
 @import "tailwindcss";
 
 :root {
-  --canvas:     #F5F1EA;
-  --surface:    #FFFFFF;
-  --sunken:     #EDE8DF;
-  --fog:        #D6CEC4;
-  --ink:        #17130E;
-  --ink2:       #4A4540;
-  --ink3:       #948E87;
-  --copper:     #A85820;
-  --copper-lt:  #C4783A;
-  --copper-bg:  #F8EDE0;
-  --success:    #2F7048;
+  /* Canvas & surfaces */
+  --canvas:     #F4F1EC;
+  --surface:    #FEFEFE;
+  --sunken:     #EAE6DF;
+  --fog:        #D0CCC5;
+
+  /* Ink scale */
+  --ink:        #0C0C0B;
+  --ink2:       #3D3A36;
+  --ink3:       #918D87;
+
+  /* Accent — sage/forest green (replaces copper) */
+  --copper:     #1F6645;
+  --copper-lt:  #2E8A5C;
+  --copper-bg:  #E6F2EC;
+
+  /* Sidebar — deep alpine pine */
+  --sidebar:        #14281E;
+  --sidebar-hover:  #1E3A2A;
+  --sidebar-active: #243F2F;
+  --sidebar-ink:    #D8EDE1;
+  --sidebar-ink2:   #8BB8A0;
+  --sidebar-ink3:   #4A7560;
+
+  /* Semantic */
+  --success:    #1F6645;
   --success-bg: #E6F2EC;
-  --warn:       #8A6318;
-  --warn-bg:    #FBF2DC;
+  --warn:       #8A6018;
+  --warn-bg:    #FBF1DC;
   --danger:     #8B2E2E;
   --danger-bg:  #F9E8E8;
 
-  /* Elevation shadows — warm, not gray */
-  --shadow-xs: 0 1px 2px rgba(23,19,14,.06);
-  --shadow-sm: 0 1px 4px rgba(23,19,14,.08), 0 2px 8px rgba(23,19,14,.04);
-  --shadow-md: 0 2px 8px rgba(23,19,14,.10), 0 8px 24px rgba(23,19,14,.06);
+  /* Elevation — cool, precise */
+  --shadow-xs: 0 1px 2px rgba(12,12,11,.05);
+  --shadow-sm: 0 1px 3px rgba(12,12,11,.07), 0 3px 10px rgba(12,12,11,.04);
+  --shadow-md: 0 2px 8px rgba(12,12,11,.08), 0 8px 28px rgba(12,12,11,.05);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --canvas:     #0E0B08;
-    --surface:    #181410;
-    --sunken:     #0A0806;
-    --fog:        #2A2420;
-    --ink:        #F2ECE3;
-    --ink2:       #B4ADA4;
-    --ink3:       #6A6058;
-    --copper:     #C47838;
-    --copper-lt:  #D49050;
-    --copper-bg:  #231A10;
-    --success:    #4A9F68;
-    --success-bg: #0E1E14;
+  :root:not([data-theme="light"]) {
+    --canvas:     #0B0F0D;
+    --surface:    #111812;
+    --sunken:     #080C0A;
+    --fog:        #1E2E24;
+    --ink:        #E4EDE8;
+    --ink2:       #9BB8A8;
+    --ink3:       #506657;
+    --copper:     #3DA870;
+    --copper-lt:  #5ABF86;
+    --copper-bg:  #0D2018;
+    --sidebar:        #080E0A;
+    --sidebar-hover:  #111A13;
+    --sidebar-active: #162019;
+    --sidebar-ink:    #C8E4D5;
+    --sidebar-ink2:   #5A8A70;
+    --sidebar-ink3:   #2E5040;
+    --success:    #3DA870;
+    --success-bg: #0D2018;
     --warn:       #C49030;
     --warn-bg:    #1C1606;
     --danger:     #D45050;
     --danger-bg:  #1E0A0A;
-    --shadow-xs: 0 1px 2px rgba(0,0,0,.2);
-    --shadow-sm: 0 1px 4px rgba(0,0,0,.3), 0 2px 8px rgba(0,0,0,.2);
-    --shadow-md: 0 2px 8px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
+    --shadow-xs: 0 1px 2px rgba(0,0,0,.25);
+    --shadow-sm: 0 1px 4px rgba(0,0,0,.35), 0 3px 10px rgba(0,0,0,.2);
+    --shadow-md: 0 2px 8px rgba(0,0,0,.45), 0 8px 28px rgba(0,0,0,.3);
   }
 }
 
 @theme inline {
-  --color-canvas:     var(--canvas);
-  --color-surface:    var(--surface);
-  --color-sunken:     var(--sunken);
-  --color-fog:        var(--fog);
-  --color-ink:        var(--ink);
-  --color-ink2:       var(--ink2);
-  --color-ink3:       var(--ink3);
-  --color-copper:     var(--copper);
-  --color-copper-lt:  var(--copper-lt);
-  --color-copper-bg:  var(--copper-bg);
-  --color-success:    var(--success);
-  --color-success-bg: var(--success-bg);
-  --color-warn:       var(--warn);
-  --color-warn-bg:    var(--warn-bg);
-  --color-danger:     var(--danger);
-  --color-danger-bg:  var(--danger-bg);
-  --font-sans:        var(--font-sans);
-  --font-display:     var(--font-display);
+  --color-canvas:       var(--canvas);
+  --color-surface:      var(--surface);
+  --color-sunken:       var(--sunken);
+  --color-fog:          var(--fog);
+  --color-ink:          var(--ink);
+  --color-ink2:         var(--ink2);
+  --color-ink3:         var(--ink3);
+  --color-copper:       var(--copper);
+  --color-copper-lt:    var(--copper-lt);
+  --color-copper-bg:    var(--copper-bg);
+  --color-success:      var(--success);
+  --color-success-bg:   var(--success-bg);
+  --color-warn:         var(--warn);
+  --color-warn-bg:      var(--warn-bg);
+  --color-danger:       var(--danger);
+  --color-danger-bg:    var(--danger-bg);
+  --font-sans:          var(--font-sans);
+  --font-display:       var(--font-display);
 }
 
 body {
@@ -76,14 +97,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Transizioni globali di stato */
 *, *::before, *::after {
   transition-property: background-color, border-color, color, opacity;
-  transition-duration: 150ms;
+  transition-duration: 120ms;
   transition-timing-function: ease;
 }
 
-/* Annulla transizioni su elementi che non devono averle */
 input, textarea, select, button {
-  transition: border-color 150ms ease, box-shadow 150ms ease, opacity 150ms ease, background-color 150ms ease;
+  transition: border-color 120ms ease, box-shadow 120ms ease, opacity 120ms ease, background-color 120ms ease;
 }

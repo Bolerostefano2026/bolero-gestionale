@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type React from "react";
-import { Inter } from "next/font/google";
+import { DM_Sans } from "next/font/google";
 import { Fraunces } from "next/font/google";
 import { Providers } from "./providers";
 import "./globals.css";
@@ -12,9 +12,10 @@ const display = Fraunces({
   axes: ["opsz", "SOFT", "WONK"],
 });
 
-const sans = Inter({
+const sans = DM_Sans({
   variable: "--font-sans",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
 });
 
 export const metadata: Metadata = {
