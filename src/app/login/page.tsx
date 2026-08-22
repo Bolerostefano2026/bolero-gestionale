@@ -16,11 +16,7 @@ export default async function LoginPage({
     const callbackUrl = (formData.get("callbackUrl") as string) || "/";
 
     try {
-      await signIn("credentials", {
-        email,
-        password,
-        redirectTo: callbackUrl,
-      });
+      await signIn("credentials", { email, password, redirectTo: callbackUrl });
     } catch (error) {
       if (error instanceof AuthError) {
         redirect(`/login?error=1&callbackUrl=${encodeURIComponent(callbackUrl)}`);
@@ -30,28 +26,68 @@ export default async function LoginPage({
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4">
-      <div className="w-full max-w-sm">
-        <div className="mb-10 text-center">
-          <h1 className="font-display text-3xl font-extrabold tracking-widest uppercase text-copper">
+    <main className="flex min-h-screen">
+      {/* Left — brand panel */}
+      <div
+        className="hidden lg:flex lg:w-[44%] flex-col justify-between p-12"
+        style={{ background: "var(--ink)" }}
+      >
+        <div>
+          <span
+            className="font-display text-[13px] tracking-wide"
+            style={{ fontStyle: "italic", fontWeight: 300, color: "var(--copper-lt)" }}
+          >
             Bolero
-          </h1>
-          <p className="mt-1 text-xs uppercase tracking-[0.2em] text-ink3">
-            Gestionale Aziendale
+          </span>
+        </div>
+
+        <div>
+          <p
+            className="font-display text-[42px] xl:text-5xl leading-[1.15]"
+            style={{ fontStyle: "italic", fontWeight: 300, color: "var(--canvas)" }}
+          >
+            Il tuo lavoro,<br />in ordine.
+          </p>
+          <p className="mt-5 text-sm leading-relaxed" style={{ color: "var(--ink3)" }}>
+            Gestionale operativo per montaggio,<br />
+            tende, pergole e serramenti — Ticino.
           </p>
         </div>
 
-        <form
-          action={authenticate}
-          className="rounded-lg border border-fog bg-surface p-8 shadow-sm"
-        >
-          <input type="hidden" name="callbackUrl" value={params.callbackUrl ?? "/"} />
+        <p className="text-[10px] tracking-widest uppercase" style={{ color: "var(--ink3)" }}>
+          © {new Date().getFullYear()} Bolero Serramenti
+        </p>
+      </div>
 
-          <div className="space-y-4">
+      {/* Right — form panel */}
+      <div
+        className="flex flex-1 flex-col items-center justify-center px-6 py-12"
+        style={{ background: "var(--canvas)" }}
+      >
+        <div className="w-full max-w-[340px]">
+          {/* Mobile brand */}
+          <div className="mb-10 lg:hidden">
+            <span
+              className="font-display text-3xl text-ink"
+              style={{ fontStyle: "italic", fontWeight: 300 }}
+            >
+              Bolero
+            </span>
+            <p className="mt-1 text-[10px] font-semibold tracking-[0.2em] uppercase text-copper">
+              Gestionale
+            </p>
+          </div>
+
+          <h2 className="mb-1 text-xl font-semibold text-ink">Accedi</h2>
+          <p className="mb-7 text-sm text-ink3">Inserisci le tue credenziali aziendali.</p>
+
+          <form action={authenticate} className="space-y-4">
+            <input type="hidden" name="callbackUrl" value={params.callbackUrl ?? "/"} />
+
             <div>
               <label
                 htmlFor="email"
-                className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink2"
+                className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-ink2"
               >
                 Email
               </label>
@@ -61,15 +97,15 @@ export default async function LoginPage({
                 type="email"
                 required
                 autoFocus
-                className="w-full rounded-md border border-fog bg-canvas px-3 py-2 text-sm text-ink outline-none focus:border-copper focus:ring-1 focus:ring-copper"
-                placeholder="nome@azienda.it"
+                placeholder="nome@azienda.ch"
+                className="w-full rounded-lg border border-fog bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink3 outline-none focus:border-copper focus:ring-2 focus:ring-copper/20"
               />
             </div>
 
             <div>
               <label
                 htmlFor="password"
-                className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink2"
+                className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-ink2"
               >
                 Password
               </label>
@@ -78,25 +114,29 @@ export default async function LoginPage({
                 name="password"
                 type="password"
                 required
-                className="w-full rounded-md border border-fog bg-canvas px-3 py-2 text-sm text-ink outline-none focus:border-copper focus:ring-1 focus:ring-copper"
                 placeholder="••••••••"
+                className="w-full rounded-lg border border-fog bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink3 outline-none focus:border-copper focus:ring-2 focus:ring-copper/20"
               />
             </div>
-          </div>
 
-          {params.error && (
-            <p className="mt-4 rounded-md bg-danger-bg px-3 py-2 text-xs text-danger">
-              Email o password non corrette.
-            </p>
-          )}
+            {params.error && (
+              <div className="rounded-lg border border-danger/30 bg-danger-bg px-4 py-3 text-sm text-danger">
+                Email o password non corrette.
+              </div>
+            )}
 
-          <button
-            type="submit"
-            className="mt-6 w-full rounded-md bg-copper px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-copper-lt"
-          >
-            Accedi
-          </button>
-        </form>
+            <button
+              type="submit"
+              className="mt-2 w-full rounded-lg py-2.5 text-sm font-semibold text-white transition-all active:scale-[0.98]"
+              style={{
+                background: "var(--copper)",
+                boxShadow: "0 1px 2px rgba(168,88,32,.25), 0 3px 10px rgba(168,88,32,.12)",
+              }}
+            >
+              Accedi
+            </button>
+          </form>
+        </div>
       </div>
     </main>
   );

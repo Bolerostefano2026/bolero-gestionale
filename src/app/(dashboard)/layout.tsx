@@ -15,25 +15,48 @@ export default async function DashboardLayout({
 
   return (
     <div className="flex min-h-screen w-full">
-      <aside className="hidden w-60 shrink-0 border-r border-fog bg-surface md:flex md:flex-col">
-        <div className="px-5 py-6">
-          <span className="font-display text-xl font-extrabold uppercase tracking-widest text-copper">
+      {/* Sidebar desktop */}
+      <aside className="hidden w-56 shrink-0 border-r border-fog bg-surface md:flex md:flex-col">
+        {/* Brand lockup */}
+        <div className="px-6 pt-7 pb-5">
+          <span
+            className="font-display block text-[22px] leading-none text-ink"
+            style={{ fontStyle: "italic", fontWeight: 300, letterSpacing: "-0.01em" }}
+          >
             Bolero
           </span>
-          <p className="mt-0.5 text-[10px] uppercase tracking-[0.18em] text-ink3">
+          <span
+            className="mt-1.5 block text-[9px] font-semibold tracking-[0.22em] uppercase text-copper"
+          >
             Gestionale
-          </p>
+          </span>
         </div>
-        <div className="flex-1 overflow-y-auto px-3">
+
+        <div className="mx-4 mb-4 border-t border-fog" />
+
+        {/* Nav */}
+        <div className="flex-1 overflow-y-auto px-2 pb-4">
           <SidebarNav />
+        </div>
+
+        {/* Sidebar footer */}
+        <div className="border-t border-fog px-5 py-3">
+          <p className="text-[9px] font-semibold tracking-[0.18em] uppercase text-ink3">
+            Ticino · CH
+          </p>
         </div>
       </aside>
 
-      <div className="flex min-h-screen flex-1 flex-col">
-        <header className="flex h-14 shrink-0 items-center justify-between border-b border-fog bg-surface px-4 md:px-6">
-          <div className="flex min-w-0 items-center gap-2">
+      {/* Main column */}
+      <div className="flex min-h-screen flex-1 flex-col overflow-hidden">
+        {/* Top bar */}
+        <header className="flex h-12 shrink-0 items-center justify-between border-b border-fog bg-surface px-4 md:px-6">
+          <div className="flex min-w-0 items-center gap-3">
             <MobileNav />
-            <span className="font-display text-base font-extrabold uppercase tracking-widest text-copper md:hidden">
+            <span
+              className="font-display text-xl leading-none text-ink md:hidden"
+              style={{ fontStyle: "italic", fontWeight: 300 }}
+            >
               Bolero
             </span>
             <div className="hidden sm:block">
@@ -51,7 +74,7 @@ export default async function DashboardLayout({
           )}
         </header>
 
-        <main className="flex-1 px-4 py-6 md:px-8 md:py-8">{children}</main>
+        <main className="flex-1 overflow-auto px-5 py-7 md:px-8 md:py-8">{children}</main>
       </div>
     </div>
   );

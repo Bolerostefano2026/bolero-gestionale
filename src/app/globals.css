@@ -1,61 +1,89 @@
 @import "tailwindcss";
 
 :root {
-  --canvas: #F4EFE6;
-  --surface: #FDFAF5;
-  --sunken: #EDE7DC;
-  --fog: #D8D2C8;
-  --ink: #1C1814;
-  --ink2: #4A453F;
-  --ink3: #8C8680;
-  --copper: #A8682A;
-  --copper-lt: #C4895A;
-  --copper-bg: #F7EDE0;
-  --success: #3D7A52;
-  --success-bg: #E8F4ED;
-  --warn: #8A6B1A;
-  --warn-bg: #FBF3E0;
-  --danger: #913030;
-  --danger-bg: #FAE8E8;
+  --canvas:     #F5F1EA;
+  --surface:    #FFFFFF;
+  --sunken:     #EDE8DF;
+  --fog:        #D6CEC4;
+  --ink:        #17130E;
+  --ink2:       #4A4540;
+  --ink3:       #948E87;
+  --copper:     #A85820;
+  --copper-lt:  #C4783A;
+  --copper-bg:  #F8EDE0;
+  --success:    #2F7048;
+  --success-bg: #E6F2EC;
+  --warn:       #8A6318;
+  --warn-bg:    #FBF2DC;
+  --danger:     #8B2E2E;
+  --danger-bg:  #F9E8E8;
+
+  /* Elevation shadows — warm, not gray */
+  --shadow-xs: 0 1px 2px rgba(23,19,14,.06);
+  --shadow-sm: 0 1px 4px rgba(23,19,14,.08), 0 2px 8px rgba(23,19,14,.04);
+  --shadow-md: 0 2px 8px rgba(23,19,14,.10), 0 8px 24px rgba(23,19,14,.06);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --canvas: #111318;
-    --surface: #1A1F28;
-    --sunken: #0D1015;
-    --fog: #2A2F3A;
-    --ink: #F0EBE2;
-    --ink2: #B8B2A8;
-    --ink3: #6A6560;
-    --copper: #C4895A;
-    --copper-lt: #D4A070;
-    --copper-bg: #251C14;
+    --canvas:     #0E0B08;
+    --surface:    #181410;
+    --sunken:     #0A0806;
+    --fog:        #2A2420;
+    --ink:        #F2ECE3;
+    --ink2:       #B4ADA4;
+    --ink3:       #6A6058;
+    --copper:     #C47838;
+    --copper-lt:  #D49050;
+    --copper-bg:  #231A10;
+    --success:    #4A9F68;
+    --success-bg: #0E1E14;
+    --warn:       #C49030;
+    --warn-bg:    #1C1606;
+    --danger:     #D45050;
+    --danger-bg:  #1E0A0A;
+    --shadow-xs: 0 1px 2px rgba(0,0,0,.2);
+    --shadow-sm: 0 1px 4px rgba(0,0,0,.3), 0 2px 8px rgba(0,0,0,.2);
+    --shadow-md: 0 2px 8px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
   }
 }
 
 @theme inline {
-  --color-canvas: var(--canvas);
-  --color-surface: var(--surface);
-  --color-sunken: var(--sunken);
-  --color-fog: var(--fog);
-  --color-ink: var(--ink);
-  --color-ink2: var(--ink2);
-  --color-ink3: var(--ink3);
-  --color-copper: var(--copper);
-  --color-copper-lt: var(--copper-lt);
-  --color-copper-bg: var(--copper-bg);
-  --color-success: var(--success);
+  --color-canvas:     var(--canvas);
+  --color-surface:    var(--surface);
+  --color-sunken:     var(--sunken);
+  --color-fog:        var(--fog);
+  --color-ink:        var(--ink);
+  --color-ink2:       var(--ink2);
+  --color-ink3:       var(--ink3);
+  --color-copper:     var(--copper);
+  --color-copper-lt:  var(--copper-lt);
+  --color-copper-bg:  var(--copper-bg);
+  --color-success:    var(--success);
   --color-success-bg: var(--success-bg);
-  --color-warn: var(--warn);
-  --color-warn-bg: var(--warn-bg);
-  --color-danger: var(--danger);
-  --color-danger-bg: var(--danger-bg);
-  --font-sans: var(--font-sans);
-  --font-display: var(--font-display);
+  --color-warn:       var(--warn);
+  --color-warn-bg:    var(--warn-bg);
+  --color-danger:     var(--danger);
+  --color-danger-bg:  var(--danger-bg);
+  --font-sans:        var(--font-sans);
+  --font-display:     var(--font-display);
 }
 
 body {
   background: var(--canvas);
   color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Transizioni globali di stato */
+*, *::before, *::after {
+  transition-property: background-color, border-color, color, opacity;
+  transition-duration: 150ms;
+  transition-timing-function: ease;
+}
+
+/* Annulla transizioni su elementi che non devono averle */
+input, textarea, select, button {
+  transition: border-color 150ms ease, box-shadow 150ms ease, opacity 150ms ease, background-color 150ms ease;
 }

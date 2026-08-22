@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import type React from "react";
-import { Manrope, Inter } from "next/font/google";
+import { Inter } from "next/font/google";
+import { Fraunces } from "next/font/google";
 import "./globals.css";
 
-const display = Manrope({
+const display = Fraunces({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["600", "700", "800"],
+  weight: ["300", "400", "600", "700"],
+  style: ["normal", "italic"],
+  axes: ["opsz"],
 });
 
 const sans = Inter({
