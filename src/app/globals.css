@@ -2,8 +2,8 @@
 
 :root {
   /* Canvas — bianco puro con sfumatura azzurra leggerissima */
-  --canvas:     #F7F9FF;
-  --surface:    #FFFFFF;
+  --canvas:     #FFFFFF;
+  --surface:    #F8FAFF;
   --sunken:     #EEF2FB;
   --fog:        #D5DDF5;
 
