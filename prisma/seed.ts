@@ -213,11 +213,12 @@ async function main() {
     }
 
     // ── Fatture ──────────────────────────────────────────────────────────────
+    // Le fatture usano { description, amount } (importo totale per riga, IVA inclusa)
     const invItems1 = [
-      { description: "Tenda a bracci Markilux 5000 3.5x2.5m", quantity: 1, unitPrice: 1490 },
-      { description: "Montaggio", quantity: 1, unitPrice: 280 },
+      { description: "Tenda a bracci Markilux 5000 3.5x2.5m", amount: 1610.69 },
+      { description: "Montaggio", amount: 302.68 },
     ];
-    const invTotal1 = invItems1.reduce((s, i) => s + i.quantity * i.unitPrice, 0) * 1.081;
+    const invTotal1 = invItems1.reduce((s, i) => s + i.amount, 0);
     await prisma.invoice.upsert({
       where: { number: "FT-2026-0097" },
       update: {},
@@ -234,8 +235,9 @@ async function main() {
       },
     });
 
+    const subtotal3Iva = Math.round(subtotal3 * 1.081 * 100) / 100;
     const invItems2 = [
-      { description: "Zanzariere plissé e montaggio (PRV-2026-0100)", quantity: 1, unitPrice: subtotal3 },
+      { description: "Zanzariere plissé e montaggio — PRV-2026-0100 (IVA 8.1% inclusa)", amount: subtotal3Iva },
     ];
     await prisma.invoice.upsert({
       where: { number: "FT-2026-0098" },
@@ -245,7 +247,7 @@ async function main() {
         clientId: giulia.id,
         status: "INVIATA",
         items: invItems2,
-        total: Math.round((subtotal3 * 1.081) * 100) / 100,
+        total: subtotal3Iva,
         dueDate: daysFromNow(12),
         issuedAt: daysAgo(8),
         createdById: ufficio.id,
@@ -261,7 +263,7 @@ async function main() {
         number: "FT-2026-0096",
         clientId: marco.id,
         status: "INVIATA",
-        items: [{ description: "Acconto 30% — Tenda parasole", quantity: 1, unitPrice: 794.22 }],
+        items: [{ description: "Acconto 30% — Tenda parasole (IVA 8.1% inclusa)", amount: 858.75 }],
         total: 858.75,
         dueDate: daysAgo(18),
         issuedAt: daysAgo(48),
