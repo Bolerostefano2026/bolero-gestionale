@@ -4,5 +4,10 @@
       "path": "/api/cron/daily-alerts",
       "schedule": "0 7 * * *"
     }
-  ]
+  ],
+  "build": {
+    "env": {
+      "NEXT_TURBOPACK": "0"
+    }
+  }
 }
