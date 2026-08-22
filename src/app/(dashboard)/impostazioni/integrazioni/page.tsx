@@ -46,11 +46,19 @@ const INTEGRATIONS = [
     envVar: "RESEND_API_KEY + EMAIL_MITTENTE",
     connected: () => Boolean(process.env.RESEND_API_KEY && process.env.EMAIL_MITTENTE),
   },
+  {
+    icon: Settings,
+    name: "Cron alert giornalieri (Vercel)",
+    description:
+      "Ogni mattina alle 07:00 controlla fatture scadute, preventivi fermi da 14+ giorni e appuntamenti odierni, inviando notifiche automatiche al titolare e ai collaboratori.",
+    envVar: "CRON_SECRET",
+    connected: () => Boolean(process.env.CRON_SECRET),
+  },
 ];
 
 export default async function IntegrazioniPage() {
   const session = await auth();
-  if (!hasPermission(session?.user.permissions, "products:manage")) {
+  if (!hasPermission(session?.user.permissions, "users:manage")) {
     return (
       <ComingSoon
         icon={Settings}

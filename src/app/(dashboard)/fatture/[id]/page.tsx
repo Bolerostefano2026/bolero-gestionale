@@ -7,6 +7,7 @@ import { hasPermission } from "@/lib/permissions";
 import { Badge } from "@/components/ui/badge";
 import { ComingSoon } from "@/components/ui/coming-soon";
 import { INVOICE_STATUS } from "@/lib/labels";
+import { FileDown } from "lucide-react";
 import { PaymentForm } from "./payment-form";
 import { ReminderButton } from "./reminder-button";
 import { MarkSentButton } from "./mark-sent-button";
@@ -82,12 +83,23 @@ export default async function InvoiceDetailPage({
             <p className="mt-0.5 text-xs text-ink3">Da preventivo {invoice.quote.number}</p>
           )}
         </div>
-        {canWrite && invoice.status === "BOZZA" && (
-          <MarkSentButton invoiceId={invoice.id} />
-        )}
+        <div className="flex items-center gap-2">
+          <a
+            href={`/api/fatture/${invoice.id}/pdf`}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-1.5 rounded-md border border-fog px-3 py-1.5 text-sm font-medium text-ink2 hover:border-copper hover:text-copper"
+          >
+            <FileDown size={14} />
+            PDF
+          </a>
+          {canWrite && invoice.status === "BOZZA" && (
+            <MarkSentButton invoiceId={invoice.id} />
+          )}
+        </div>
       </div>
 
-      {overdue && canWrite && (
+      {(overdue || invoice.status === "INVIATA") && canWrite && (
         <div className="mb-6">
           <ReminderButton invoiceId={invoice.id} />
         </div>
