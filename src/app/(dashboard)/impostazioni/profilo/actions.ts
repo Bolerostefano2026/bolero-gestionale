@@ -34,15 +34,15 @@ export async function cambiaPassword(formData: FormData) {
   if (nuova !== conferma) return { error: "Le password non coincidono" };
 
   const user = await prisma.user.findUnique({ where: { id: session.user.id } });
-  if (!user?.password) return { error: "Account senza password locale" };
+  if (!user?.passwordHash) return { error: "Account senza password locale" };
 
-  const valid = await bcrypt.compare(current, user.password);
+  const valid = await bcrypt.compare(current, user.passwordHash);
   if (!valid) return { error: "Password attuale errata" };
 
   const hash = await bcrypt.hash(nuova, 12);
   await prisma.user.update({
     where: { id: session.user.id },
-    data: { password: hash },
+    data: { passwordHash: hash },
   });
 
   return { success: "Password aggiornata" };
@@ -57,7 +57,7 @@ export async function aggiornaAvatar(formData: FormData) {
 
   await prisma.user.update({
     where: { id: session.user.id },
-    data: { image: imageUrl },
+    data: { avatarUrl: imageUrl },
   });
 
   revalidatePath("/impostazioni/profilo");
