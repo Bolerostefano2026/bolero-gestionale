@@ -6,6 +6,7 @@ import { hasPermission } from "@/lib/permissions";
 import { ComingSoon } from "@/components/ui/coming-soon";
 import { CreateUserForm } from "./create-user-form";
 import { UserActiveToggle } from "./user-active-toggle";
+import { UserRoleSelect } from "./user-role-select";
 
 export default async function ImpostazioniPage() {
   const session = await auth();
@@ -106,7 +107,7 @@ export default async function ImpostazioniPage() {
               <th className="px-4 py-2.5 font-semibold">Nome</th>
               <th className="px-4 py-2.5 font-semibold">Email</th>
               <th className="px-4 py-2.5 font-semibold">Ruolo</th>
-              <th className="px-4 py-2.5 font-semibold">Stato</th>
+              <th className="px-4 py-2.5 font-semibold">Attivo</th>
             </tr>
           </thead>
           <tbody>
@@ -114,7 +115,14 @@ export default async function ImpostazioniPage() {
               <tr key={u.id} className="border-b border-fog last:border-0">
                 <td className="px-4 py-2.5 font-medium text-ink">{u.name}</td>
                 <td className="px-4 py-2.5 text-ink2">{u.email}</td>
-                <td className="px-4 py-2.5 text-ink2">{u.role.label}</td>
+                <td className="px-4 py-2.5">
+                  <UserRoleSelect
+                    userId={u.id}
+                    currentRoleId={u.roleId}
+                    roles={roles.map((r) => ({ id: r.id, label: r.label }))}
+                    disabled={u.id === user.id}
+                  />
+                </td>
                 <td className="px-4 py-2.5">
                   <UserActiveToggle
                     userId={u.id}

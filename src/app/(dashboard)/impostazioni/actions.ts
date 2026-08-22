@@ -74,3 +74,28 @@ export async function toggleUserActive(userId: string, active: boolean) {
 
   revalidatePath("/impostazioni");
 }
+
+export async function changeUserRole(userId: string, roleId: string) {
+  const session = await auth();
+  if (!hasPermission(session?.user.permissions, "users:manage")) {
+    throw new Error("Permesso negato");
+  }
+  if (userId === session!.user.id) {
+    throw new Error("Non puoi cambiare il tuo stesso ruolo");
+  }
+
+  await prisma.user.update({ where: { id: userId }, data: { roleId } });
+
+  await prisma.auditLog.create({
+    data: {
+      userId: session!.user.id,
+      entityType: "user",
+      entityId: userId,
+      action: "change_role",
+      changes: { roleId },
+      source: "manual",
+    },
+  });
+
+  revalidatePath("/impostazioni");
+}
