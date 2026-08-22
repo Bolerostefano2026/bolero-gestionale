@@ -4,13 +4,20 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_ITEMS } from "@/lib/nav";
 import { cn } from "@/lib/utils";
+import { usePermissions } from "@/hooks/use-permissions";
 
 export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
+  const { canAny } = usePermissions();
+
+  const visibleItems = NAV_ITEMS.filter((item) => {
+    if (!item.requireAny) return true;
+    return canAny(...item.requireAny);
+  });
 
   return (
     <nav className="flex flex-col gap-0.5">
-      {NAV_ITEMS.map((item) => {
+      {visibleItems.map((item) => {
         const isActive =
           item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
         const Icon = item.icon;

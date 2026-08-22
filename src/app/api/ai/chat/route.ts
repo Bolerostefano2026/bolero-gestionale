@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Messaggio non valido" }, { status: 400 });
   }
 
-  // Tetto giornaliero: protegge il credito Anthropic da usi anomali.
+  // Tetto giornaliero: evita abusi sul server Ollama locale.
   const limite = await verificaLimiti(session.user.id);
   if (!limite.consentito) {
     return NextResponse.json({ error: limite.motivo }, { status: 429 });

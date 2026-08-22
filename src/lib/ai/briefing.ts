@@ -1,5 +1,5 @@
 import { generateObject } from "ai";
-import { createAnthropic } from "@ai-sdk/anthropic";
+import { createOpenAI } from "@ai-sdk/openai";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { WORKFLOW_STAGE_LABEL, QUOTE_STATUS, APPOINTMENT_TYPE } from "@/lib/labels";
@@ -201,12 +201,15 @@ function isValidPriority(p: { link?: string }): boolean {
  */
 export async function generateBriefing(): Promise<Briefing> {
   const snapshot = await collectSnapshot();
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const ollamaBase = process.env.OLLAMA_BASE_URL ?? "http://localhost:11434/v1";
+  const ollamaReachable = await fetch(`${ollamaBase.replace("/v1", "")}/api/tags`)
+    .then(() => true)
+    .catch(() => false);
 
-  if (apiKey) {
+  if (ollamaReachable) {
     try {
-      const anthropic = createAnthropic({ apiKey });
-      const model = anthropic(process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-5-20250929");
+      const ollama = createOpenAI({ baseURL: ollamaBase, apiKey: "ollama" });
+      const model = ollama(process.env.OLLAMA_MODEL ?? "llama3.1:latest");
 
       const { object } = await generateObject({
         model,
