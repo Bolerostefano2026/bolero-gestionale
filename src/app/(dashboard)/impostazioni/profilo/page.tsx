@@ -1,13 +1,17 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { aggiornaNome, cambiaPassword, aggiornaAvatar } from "./actions";
+
+const inputCls =
+  "w-full rounded-md border border-fog bg-canvas px-3 py-2 text-sm text-ink focus:border-copper focus:outline-none focus:ring-1 focus:ring-copper";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-xs font-semibold uppercase tracking-wide text-ink2 mb-1">
+      <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-ink2">
         {label}
       </label>
       {children}
@@ -15,23 +19,42 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
+function Feedback({ msg, ok }: { msg: string; ok: boolean }) {
   return (
-    <input
-      {...props}
-      className="w-full rounded-md border border-fog bg-canvas px-3 py-2 text-sm text-ink focus:border-copper focus:outline-none"
-    />
+    <p className={`mt-2 rounded-md px-3 py-2 text-sm ${ok ? "bg-success/10 text-success" : "bg-danger/10 text-danger"}`}>
+      {msg}
+    </p>
   );
 }
 
-function Alert({ msg, ok }: { msg: string; ok: boolean }) {
+function Avatar({ name, image }: { name?: string; image?: string }) {
+  const initials = name
+    ?.split(" ")
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase() ?? "?";
+
+  if (image) {
+    return (
+      <img
+        src={image}
+        alt={name ?? "avatar"}
+        className="h-16 w-16 rounded-full border border-fog object-cover"
+        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+      />
+    );
+  }
   return (
-    <p className={`mt-2 text-sm font-medium ${ok ? "text-green-600" : "text-red-600"}`}>{msg}</p>
+    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-copper/20 text-xl font-bold text-copper">
+      {initials}
+    </div>
   );
 }
 
 export default function ProfiloPage() {
   const { data: session, update } = useSession();
+  const router = useRouter();
   const user = session?.user;
 
   const [nomePending, startNome] = useTransition();
@@ -48,7 +71,10 @@ export default function ProfiloPage() {
     startNome(async () => {
       const r = await aggiornaNome(fd);
       setNomeMsg({ text: r.success ?? r.error ?? "", ok: !!r.success });
-      if (r.success) update();
+      if (r.success) {
+        await update({ name: fd.get("name") as string });
+        router.refresh();
+      }
     });
   }
 
@@ -68,98 +94,105 @@ export default function ProfiloPage() {
     startAvatar(async () => {
       const r = await aggiornaAvatar(fd);
       setAvatarMsg({ text: r.success ?? r.error ?? "", ok: !!r.success });
-      if (r.success) update();
+      if (r.success) {
+        await update();
+        router.refresh();
+      }
     });
   }
 
   return (
     <div className="max-w-lg">
-      <h1 className="font-display text-2xl font-bold text-ink mb-6">Profilo</h1>
+      <h1 className="mb-6 font-display text-2xl font-bold text-ink">Profilo personale</h1>
 
-      {/* Avatar */}
-      <div className="mb-6 flex items-center gap-4">
-        {user?.image ? (
-          <img src={user.image} alt="avatar" className="h-16 w-16 rounded-full object-cover border border-fog" />
-        ) : (
-          <div className="h-16 w-16 rounded-full bg-copper/20 flex items-center justify-center text-2xl font-bold text-copper">
-            {user?.name?.charAt(0).toUpperCase()}
-          </div>
-        )}
+      <div className="mb-6 flex items-center gap-4 rounded-lg border border-fog bg-surface p-5">
+        <Avatar name={user?.name ?? ""} image={user?.image ?? undefined} />
         <div>
           <p className="font-semibold text-ink">{user?.name}</p>
           <p className="text-sm text-ink2">{user?.email}</p>
+          <p className="mt-0.5 text-xs text-ink3">{user?.roleLabel}</p>
         </div>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-5">
         {/* Cambio nome */}
         <section className="rounded-lg border border-fog bg-surface p-5">
-          <h2 className="font-display text-sm font-bold uppercase tracking-wide text-ink mb-4">
+          <h2 className="mb-4 font-display text-sm font-bold uppercase tracking-wide text-ink">
             Nome visualizzato
           </h2>
           <form onSubmit={handleNome} className="space-y-3">
             <Field label="Nome e cognome">
-              <Input name="name" defaultValue={user?.name ?? ""} required minLength={2} />
+              <input
+                name="name"
+                className={inputCls}
+                defaultValue={user?.name ?? ""}
+                required
+                minLength={2}
+              />
             </Field>
             <button
               type="submit"
               disabled={nomePending}
               className="rounded-md bg-copper px-4 py-2 text-sm font-semibold text-white hover:bg-copper/90 disabled:opacity-60"
             >
-              {nomePending ? "Salvataggio..." : "Salva nome"}
+              {nomePending ? "Salvataggio…" : "Salva nome"}
             </button>
-            {nomeMsg && <Alert msg={nomeMsg.text} ok={nomeMsg.ok} />}
+            {nomeMsg && <Feedback msg={nomeMsg.text} ok={nomeMsg.ok} />}
           </form>
         </section>
 
         {/* Cambio password */}
         <section className="rounded-lg border border-fog bg-surface p-5">
-          <h2 className="font-display text-sm font-bold uppercase tracking-wide text-ink mb-4">
+          <h2 className="mb-4 font-display text-sm font-bold uppercase tracking-wide text-ink">
             Cambia password
           </h2>
           <form onSubmit={handlePw} className="space-y-3">
             <Field label="Password attuale">
-              <Input type="password" name="current" required autoComplete="current-password" />
+              <input type="password" name="current" className={inputCls} required autoComplete="current-password" />
             </Field>
-            <Field label="Nuova password">
-              <Input type="password" name="nuova" required minLength={8} autoComplete="new-password" />
+            <Field label="Nuova password (min. 8 caratteri)">
+              <input type="password" name="nuova" className={inputCls} required minLength={8} autoComplete="new-password" />
             </Field>
             <Field label="Conferma nuova password">
-              <Input type="password" name="conferma" required autoComplete="new-password" />
+              <input type="password" name="conferma" className={inputCls} required autoComplete="new-password" />
             </Field>
             <button
               type="submit"
               disabled={pwPending}
               className="rounded-md bg-copper px-4 py-2 text-sm font-semibold text-white hover:bg-copper/90 disabled:opacity-60"
             >
-              {pwPending ? "Aggiornamento..." : "Aggiorna password"}
+              {pwPending ? "Aggiornamento…" : "Aggiorna password"}
             </button>
-            {pwMsg && <Alert msg={pwMsg.text} ok={pwMsg.ok} />}
+            {pwMsg && <Feedback msg={pwMsg.text} ok={pwMsg.ok} />}
           </form>
         </section>
 
-        {/* Avatar URL */}
+        {/* Foto profilo */}
         <section className="rounded-lg border border-fog bg-surface p-5">
-          <h2 className="font-display text-sm font-bold uppercase tracking-wide text-ink mb-4">
+          <h2 className="mb-4 font-display text-sm font-bold uppercase tracking-wide text-ink">
             Foto profilo
           </h2>
           <form onSubmit={handleAvatar} className="space-y-3">
-            <Field label="URL immagine">
-              <Input
+            <Field label="URL immagine (https://)">
+              <input
                 name="imageUrl"
                 type="url"
-                placeholder="https://..."
+                className={inputCls}
+                placeholder="https://esempio.com/foto.jpg"
                 defaultValue={user?.image ?? ""}
               />
             </Field>
+            <p className="text-xs text-ink3">
+              Incolla un link pubblico a un&apos;immagine (es. da Gravatar o un servizio di hosting foto).
+            </p>
             <button
               type="submit"
               disabled={avatarPending}
               className="rounded-md bg-copper px-4 py-2 text-sm font-semibold text-white hover:bg-copper/90 disabled:opacity-60"
             >
-              {avatarPending ? "Salvataggio..." : "Aggiorna foto"}
+              {avatarPending ? "Salvataggio…" : "Aggiorna foto"}
             </button>
-            {avatarMsg && <Alert msg={avatarMsg.text} ok={avatarMsg.ok} />}
+            {avatarMsg && <Feedback msg={avatarMsg.text} ok={avatarMsg.ok} />}
           </form>
         </section>
       </div>

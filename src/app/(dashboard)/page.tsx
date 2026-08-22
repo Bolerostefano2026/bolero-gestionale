@@ -68,7 +68,7 @@ export default async function DashboardPage() {
       ? prisma.user.count()
       : Promise.resolve(null),
     canSeeInvoices
-      ? prisma.invoice.count({ where: { status: "INVIATA", dueDate: { lt: new Date() } } })
+      ? prisma.invoice.count({ where: { status: "SCADUTA" } })
       : Promise.resolve(0),
     prisma.client.findMany({
       where: {

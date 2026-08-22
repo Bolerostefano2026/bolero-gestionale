@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type React from "react";
 import { Manrope, Inter } from "next/font/google";
 import "./globals.css";
 
@@ -18,7 +19,7 @@ export const metadata: Metadata = {
   description: "Sistema operativo digitale per montaggio, tende e pergole.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="it"

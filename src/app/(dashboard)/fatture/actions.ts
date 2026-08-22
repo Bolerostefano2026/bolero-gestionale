@@ -76,7 +76,10 @@ export async function createInvoice(formData: FormData) {
 
 export async function markInvoiceSent(invoiceId: string) {
   await requireWrite();
-  await prisma.invoice.update({ where: { id: invoiceId }, data: { status: "INVIATA" } });
+  const invoice = await prisma.invoice.findUniqueOrThrow({ where: { id: invoiceId } });
+  const now = new Date();
+  const newStatus = invoice.dueDate < now ? "SCADUTA" : "INVIATA";
+  await prisma.invoice.update({ where: { id: invoiceId }, data: { status: newStatus } });
   revalidatePath("/fatture");
   revalidatePath(`/fatture/${invoiceId}`);
 }
