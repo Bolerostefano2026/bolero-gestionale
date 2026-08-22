@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type React from "react";
 import { Inter } from "next/font/google";
 import { Fraunces } from "next/font/google";
+import { Providers } from "./providers";
 import "./globals.css";
 
 const display = Fraunces({
@@ -28,7 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${display.variable} ${sans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-canvas text-ink">
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
