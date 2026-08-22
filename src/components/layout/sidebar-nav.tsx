@@ -15,92 +15,90 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
     return canAny(...item.requireAny);
   });
 
-  return (
-    <>
-      <style>{`
-        .nav-icon-item { position: relative; }
-        .nav-icon-item .nav-tooltip {
-          position: absolute;
-          left: calc(100% + 10px);
-          top: 50%;
-          transform: translateY(-50%);
-          background: var(--ink);
-          color: var(--canvas);
-          font-size: 11px;
-          font-weight: 500;
-          white-space: nowrap;
-          padding: 4px 9px;
-          border-radius: 6px;
-          pointer-events: none;
-          opacity: 0;
-          transition: opacity 100ms ease;
-          z-index: 100;
-          letter-spacing: 0.01em;
-        }
-        .nav-icon-item:hover .nav-tooltip { opacity: 1; }
-        .nav-icon-item .nav-tooltip::before {
-          content: '';
-          position: absolute;
-          right: 100%;
-          top: 50%;
-          transform: translateY(-50%);
-          border: 4px solid transparent;
-          border-right-color: var(--ink);
-        }
-      `}</style>
+  // Group items
+  const ungrouped = visibleItems.filter((i) => !i.group);
+  const groups: Record<string, typeof visibleItems> = {};
+  for (const item of visibleItems) {
+    if (item.group) {
+      if (!groups[item.group]) groups[item.group] = [];
+      groups[item.group].push(item);
+    }
+  }
 
-      {visibleItems.map((item) => {
-        const isActive =
-          item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
-        const Icon = item.icon;
+  const renderItem = (item: (typeof visibleItems)[0]) => {
+    const isActive =
+      item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+    const Icon = item.icon;
 
-        if (!item.available) {
-          return (
-            <div
-              key={item.href}
-              className="nav-icon-item flex items-center justify-center w-9 h-9 rounded-lg opacity-30 cursor-not-allowed"
-            >
-              <Icon size={16} strokeWidth={1.5} style={{ color: "var(--sidebar-ink2)" }} />
-              <span className="nav-tooltip">{item.label} (presto)</span>
-            </div>
-          );
-        }
-
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={onNavigate}
-            title=""
-            className={cn("nav-icon-item flex items-center justify-center w-9 h-9 rounded-lg transition-all")}
-            style={
-              isActive
-                ? {
-                    background: "var(--sidebar-active)",
-                    boxShadow: "0 0 0 1px rgba(255,255,255,0.07) inset",
-                  }
-                : {}
-            }
-            onMouseEnter={(e) => {
-              if (!isActive) {
-                (e.currentTarget as HTMLElement).style.background = "var(--sidebar-hover)";
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!isActive) {
-                (e.currentTarget as HTMLElement).style.background = "";
-              }
-            }}
+    if (!item.available) {
+      return (
+        <div
+          key={item.href}
+          className="flex items-center gap-2.5 px-3 py-[7px] rounded-lg text-[13px] opacity-35 cursor-not-allowed"
+          style={{ color: "var(--sidebar-ink2)" }}
+        >
+          <Icon size={15} strokeWidth={1.5} />
+          <span>{item.label}</span>
+          <span
+            className="ml-auto text-[9px] font-semibold tracking-widest uppercase"
+            style={{ color: "var(--sidebar-ink3)" }}
           >
-            <Icon
-              size={16}
-              strokeWidth={isActive ? 2 : 1.5}
-              style={{ color: isActive ? "var(--sidebar-ink)" : "var(--sidebar-ink2)" }}
-            />
-            <span className="nav-tooltip">{item.label}</span>
-          </Link>
-        );
-      })}
-    </>
+            Presto
+          </span>
+        </div>
+      );
+    }
+
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        onClick={onNavigate}
+        className={cn(
+          "flex items-center gap-2.5 px-3 py-[7px] rounded-lg text-[13px] font-medium transition-all",
+        )}
+        style={
+          isActive
+            ? {
+                background: "var(--sidebar-active)",
+                color: "var(--sidebar-ink)",
+                boxShadow: "0 0 0 1px rgba(59,130,246,0.2) inset",
+              }
+            : { color: "var(--sidebar-ink2)" }
+        }
+        onMouseEnter={(e) => {
+          if (!isActive)
+            (e.currentTarget as HTMLElement).style.background = "var(--sidebar-hover)";
+        }}
+        onMouseLeave={(e) => {
+          if (!isActive) (e.currentTarget as HTMLElement).style.background = "";
+        }}
+      >
+        <Icon
+          size={15}
+          strokeWidth={isActive ? 2 : 1.5}
+          style={{ color: isActive ? "var(--copper-lt)" : "var(--sidebar-ink3)" }}
+        />
+        {item.label}
+      </Link>
+    );
+  };
+
+  return (
+    <nav className="flex flex-col gap-0.5">
+      {ungrouped.map(renderItem)}
+
+      {Object.entries(groups).map(([group, items]) => (
+        <div key={group} className="mt-4">
+          <p
+            className="px-3 mb-1 text-[9px] font-semibold tracking-[0.18em] uppercase"
+            style={{ color: "var(--sidebar-ink3)" }}
+          >
+            {group}
+          </p>
+          {items.map(renderItem)}
+        </div>
+      ))}
+    </nav>
   );
 }

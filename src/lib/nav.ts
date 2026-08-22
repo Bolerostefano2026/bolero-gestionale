@@ -17,7 +17,7 @@ export type NavItem = {
   href: string;
   icon: LucideIcon;
   available: boolean;
-  /** Se presente, l'utente deve avere ALMENO uno di questi permessi per vedere la voce */
+  group?: string;
   requireAny?: string[];
 };
 
@@ -28,6 +28,7 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/clienti",
     icon: Users,
     available: true,
+    group: "Lavoro",
     requireAny: ["clients:read_all", "clients:read_assigned"],
   },
   {
@@ -35,6 +36,7 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/calendario",
     icon: Calendar,
     available: true,
+    group: "Lavoro",
     requireAny: ["appointments:read_all", "appointments:read_own"],
   },
   {
@@ -42,6 +44,7 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/preventivi",
     icon: FileText,
     available: true,
+    group: "Lavoro",
     requireAny: ["quotes:read"],
   },
   {
@@ -49,6 +52,7 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/misure",
     icon: Ruler,
     available: true,
+    group: "Lavoro",
     requireAny: ["measurements:read", "measurements:write"],
   },
   {
@@ -56,6 +60,7 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/workflow",
     icon: GitBranch,
     available: true,
+    group: "Lavoro",
     requireAny: ["workflow:read", "workflow:write"],
   },
   {
@@ -63,6 +68,7 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/fatture",
     icon: Receipt,
     available: true,
+    group: "Lavoro",
     requireAny: ["invoices:read"],
   },
   {
@@ -70,6 +76,7 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/chat",
     icon: MessageSquare,
     available: true,
+    group: "Strumenti",
     requireAny: ["chat:read"],
   },
   {
@@ -77,6 +84,7 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/ai",
     icon: Sparkles,
     available: true,
+    group: "Strumenti",
     requireAny: ["ai:configure", "ai:approve_actions"],
   },
   {
@@ -84,6 +92,7 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/impostazioni",
     icon: Settings,
     available: true,
+    group: "Strumenti",
     requireAny: ["users:manage"],
   },
 ];

@@ -29,7 +29,7 @@ export default async function LoginPage({
     <main className="flex min-h-screen">
       {/* Left — brand panel */}
       <div
-        className="hidden lg:flex lg:w-[46%] flex-col justify-between p-14"
+        className="hidden lg:flex lg:w-[44%] flex-col justify-between p-14"
         style={{ background: "var(--sidebar)" }}
       >
         <div className="flex items-center gap-3">

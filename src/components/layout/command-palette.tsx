@@ -41,7 +41,7 @@ const QUICK_ACTIONS: { label: string; href: string; icon: typeof Plus }[] = [
   { label: "Vai al calendario", href: "/calendario", icon: Calendar },
 ];
 
-export function CommandPalette() {
+export function CommandPalette({ compact }: { compact?: boolean } = {}) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -136,17 +136,39 @@ export function CommandPalette() {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="flex items-center gap-2 rounded-md border border-fog bg-canvas px-3 py-1.5 text-sm text-ink3 transition hover:border-copper hover:text-ink2"
-      >
-        <Search size={14} />
-        <span className="hidden sm:inline">Cerca…</span>
-        <kbd className="ml-2 hidden rounded border border-fog px-1.5 py-0.5 text-[10px] font-medium text-ink3 sm:inline">
-          Ctrl K
-        </kbd>
-      </button>
+      {compact ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-[12px] transition"
+          style={{
+            background: "rgba(255,255,255,0.05)",
+            color: "var(--sidebar-ink2)",
+            border: "1px solid rgba(255,255,255,0.07)",
+          }}
+        >
+          <Search size={13} />
+          <span className="flex-1 text-left">Cerca…</span>
+          <kbd
+            className="rounded px-1.5 py-0.5 text-[9px] font-medium"
+            style={{ background: "rgba(0,0,0,0.2)", color: "var(--sidebar-ink3)" }}
+          >
+            ⌘K
+          </kbd>
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="flex items-center gap-2 rounded-md border border-fog bg-canvas px-3 py-1.5 text-sm text-ink3 transition hover:border-copper hover:text-ink2"
+        >
+          <Search size={14} />
+          <span className="hidden sm:inline">Cerca…</span>
+          <kbd className="ml-2 hidden rounded border border-fog px-1.5 py-0.5 text-[10px] font-medium text-ink3 sm:inline">
+            Ctrl K
+          </kbd>
+        </button>
+      )}
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-[12vh]">

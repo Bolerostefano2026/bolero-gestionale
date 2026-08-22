@@ -15,85 +15,109 @@ export default async function DashboardLayout({
   if (!session) redirect("/login");
   const user = session.user;
 
+  const initials = (user.name ?? "?")
+    .split(" ")
+    .map((p: string) => p[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
   return (
     <div className="flex min-h-screen w-full">
-      {/* Icon rail sidebar — desktop only */}
+      {/* Sidebar desktop — navy 220px */}
       <aside
-        className="hidden md:flex md:flex-col md:w-[52px] shrink-0 z-20"
-        style={{
-          background: "var(--sidebar)",
-          borderRight: "1px solid rgba(255,255,255,0.04)",
-        }}
+        className="hidden md:flex md:flex-col md:w-[220px] shrink-0"
+        style={{ background: "var(--sidebar)" }}
       >
-        {/* Brand monogram */}
-        <div className="flex items-center justify-center h-14 shrink-0">
-          <span
-            className="font-display text-[20px] leading-none select-none"
-            style={{ fontStyle: "italic", fontWeight: 300, color: "var(--sidebar-ink)" }}
-            title="Bolero Gestionale"
+        {/* Brand */}
+        <div className="px-5 pt-6 pb-4">
+          <div className="flex items-baseline gap-2">
+            <span
+              className="font-display text-[24px] leading-none"
+              style={{ fontStyle: "italic", fontWeight: 300, color: "var(--sidebar-ink)" }}
+            >
+              Bolero
+            </span>
+          </div>
+          <p
+            className="mt-1 text-[8px] font-semibold tracking-[0.25em] uppercase"
+            style={{ color: "var(--sidebar-ink3)" }}
           >
-            B
-          </span>
+            Gestionale · Ticino
+          </p>
+        </div>
+
+        {/* Search shortcut */}
+        <div className="px-3 pb-3">
+          <CommandPalette compact />
         </div>
 
         {/* Divider */}
-        <div style={{ height: "1px", background: "rgba(255,255,255,0.06)", margin: "0 10px 6px" }} />
+        <div style={{ height: "1px", background: "rgba(255,255,255,0.05)", margin: "0 12px 10px" }} />
 
-        {/* Nav icons */}
-        <div className="flex-1 flex flex-col items-center gap-0.5 py-2 px-1.5 overflow-y-auto">
+        {/* Nav */}
+        <div className="flex-1 overflow-y-auto px-3 pb-4">
           <SidebarNav />
         </div>
 
-        {/* Bottom divider */}
-        <div style={{ height: "1px", background: "rgba(255,255,255,0.06)", margin: "6px 10px 0" }} />
-
-        {/* Footer label */}
-        <div className="flex items-center justify-center h-10 shrink-0">
-          <span
-            className="text-[7px] font-semibold tracking-[0.2em] uppercase select-none"
-            style={{ color: "var(--sidebar-ink3)" }}
-          >
-            CH
-          </span>
+        {/* User footer */}
+        <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+          <div className="px-3 py-3 flex items-center gap-2.5">
+            <span
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[10px] font-semibold"
+              style={{ background: "var(--sidebar-active)", color: "var(--copper-lt)" }}
+            >
+              {initials}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p
+                className="truncate text-[12px] font-medium leading-tight"
+                style={{ color: "var(--sidebar-ink)" }}
+              >
+                {(user.name ?? "").split(" ")[0]}
+              </p>
+              <p
+                className="truncate text-[10px] leading-tight"
+                style={{ color: "var(--sidebar-ink3)" }}
+              >
+                {user.roleLabel}
+              </p>
+            </div>
+          </div>
         </div>
       </aside>
 
       {/* Main column */}
       <div className="flex min-h-screen flex-1 flex-col overflow-hidden">
-        {/* Top bar */}
+        {/* Top bar — slim, actions only */}
         <header
-          className="flex h-13 shrink-0 items-center justify-between px-5 md:px-6"
+          className="flex h-12 shrink-0 items-center justify-between px-5 md:px-6"
           style={{
             background: "var(--surface)",
             borderBottom: "1px solid var(--fog)",
           }}
         >
-          <div className="flex min-w-0 items-center gap-3">
+          <div className="flex items-center gap-3">
             <MobileNav />
-            {/* Mobile brand */}
+            {/* Mobile brand + search */}
             <span
               className="font-display text-xl leading-none text-ink md:hidden"
               style={{ fontStyle: "italic", fontWeight: 300 }}
             >
               Bolero
             </span>
-            <div className="hidden sm:block">
+            <div className="sm:hidden">
               <CommandPalette />
             </div>
           </div>
 
-          {user && (
-            <div className="flex items-center gap-1">
-              <div className="sm:hidden">
-                <CommandPalette />
-              </div>
-              <NotificationBell />
-              <UserMenu name={user.name ?? ""} roleLabel={user.roleLabel} />
-            </div>
-          )}
+          <div className="flex items-center gap-1">
+            <NotificationBell />
+            <UserMenu name={user.name ?? ""} roleLabel={user.roleLabel} />
+          </div>
         </header>
 
-        <main className="flex-1 overflow-auto px-5 py-7 md:px-8 md:py-8">{children}</main>
+        <main className="flex-1 overflow-auto px-6 py-7 md:px-8 md:py-8">{children}</main>
       </div>
     </div>
   );
