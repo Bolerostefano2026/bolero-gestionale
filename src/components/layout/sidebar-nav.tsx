@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { NAV_ITEMS } from "@/lib/nav";
 import { usePermissions } from "@/hooks/use-permissions";
 import { cn } from "@/lib/utils";
-import { usePermissions } from "@/hooks/use-permissions";
 
 export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
