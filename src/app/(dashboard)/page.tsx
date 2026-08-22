@@ -41,6 +41,9 @@ export default async function DashboardPage() {
   fatturatoRange.setDate(1);
   fatturatoRange.setHours(0, 0, 0, 0);
 
+  const dueSoon = new Date();
+  dueSoon.setDate(dueSoon.getDate() + 7);
+
   const [
     clientCount,
     todaysAppointments,
@@ -50,6 +53,8 @@ export default async function DashboardPage() {
     overdueInvoices,
     staleClients,
     fattureGrafico,
+    quoteStats,
+    invoicesDueSoon,
   ] = await Promise.all([
     prisma.client.count(),
     prisma.appointment.findMany({
@@ -78,6 +83,17 @@ export default async function DashboardPage() {
       ? prisma.invoice.findMany({
           where: { status: "PAGATA", issuedAt: { gte: fatturatoRange } },
           select: { total: true, issuedAt: true },
+        })
+      : Promise.resolve([]),
+    hasPermission(user.permissions, "quotes:read")
+      ? prisma.quote.groupBy({ by: ["status"], _count: { id: true } })
+      : Promise.resolve([]),
+    canSeeInvoices
+      ? prisma.invoice.findMany({
+          where: { status: "INVIATA", dueDate: { gte: new Date(), lte: dueSoon } },
+          include: { client: { select: { name: true, surname: true } } },
+          orderBy: { dueDate: "asc" },
+          take: 5,
         })
       : Promise.resolve([]),
   ]);
@@ -261,6 +277,80 @@ export default async function DashboardPage() {
           )}
         </div>
       </div>
+
+      {(quoteStats.length > 0 || invoicesDueSoon.length > 0) && (
+        <div className="mt-6 grid gap-6 lg:grid-cols-2">
+          {quoteStats.length > 0 && (
+            <div className="rounded-lg border border-fog bg-surface p-6">
+              <h2 className="mb-4 font-display text-sm font-bold uppercase tracking-wide text-ink">
+                Preventivi per stato
+              </h2>
+              <div className="space-y-2">
+                {(() => {
+                  const ORDER = ["BOZZA","INVIATO","IN_ATTESA","APPROVATO","RIFIUTATO","CONVERTITO","COMPLETATO"];
+                  const LABELS: Record<string, string> = {
+                    BOZZA: "Bozza", INVIATO: "Inviato", IN_ATTESA: "In attesa",
+                    APPROVATO: "Approvato", RIFIUTATO: "Rifiutato",
+                    CONVERTITO: "Convertito", COMPLETATO: "Completato",
+                  };
+                  const COLORS: Record<string, string> = {
+                    BOZZA: "bg-ink3/30", INVIATO: "bg-copper/60", IN_ATTESA: "bg-warn/70",
+                    APPROVATO: "bg-success", RIFIUTATO: "bg-danger/60",
+                    CONVERTITO: "bg-copper", COMPLETATO: "bg-ink2",
+                  };
+                  const sorted = ORDER.map((s) => {
+                    const found = quoteStats.find((q) => q.status === s);
+                    return { status: s, count: found?._count.id ?? 0 };
+                  }).filter((s) => s.count > 0);
+                  const max = Math.max(...sorted.map((s) => s.count), 1);
+                  return sorted.map(({ status, count }) => (
+                    <div key={status} className="flex items-center gap-3">
+                      <span className="w-24 shrink-0 text-xs text-ink2">{LABELS[status]}</span>
+                      <div className="flex-1 rounded-full bg-sunken h-5 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${COLORS[status]}`}
+                          style={{ width: `${(count / max) * 100}%` }}
+                        />
+                      </div>
+                      <span className="w-6 text-right text-xs tabular-nums text-ink2">{count}</span>
+                    </div>
+                  ));
+                })()}
+              </div>
+              <Link href="/preventivi" className="mt-3 inline-block text-xs font-semibold text-copper hover:underline">
+                Vedi tutti i preventivi →
+              </Link>
+            </div>
+          )}
+
+          {invoicesDueSoon.length > 0 && (
+            <div className="rounded-lg border border-fog bg-surface p-6">
+              <h2 className="mb-4 font-display text-sm font-bold uppercase tracking-wide text-ink">
+                Fatture in scadenza entro 7 giorni
+              </h2>
+              <ul className="space-y-2">
+                {invoicesDueSoon.map((inv) => (
+                  <li key={inv.id}>
+                    <Link
+                      href={`/fatture/${inv.id}`}
+                      className="flex items-center justify-between rounded-md border border-fog px-3 py-2 text-sm hover:border-copper"
+                    >
+                      <span className="text-ink font-medium">{inv.number}</span>
+                      <span className="text-ink2">{inv.client.name} {inv.client.surname}</span>
+                      <span className="text-xs text-warn font-semibold">
+                        scad. {inv.dueDate.toLocaleDateString("it-IT")}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              <Link href="/fatture" className="mt-3 inline-block text-xs font-semibold text-copper hover:underline">
+                Vedi tutte le fatture →
+              </Link>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
