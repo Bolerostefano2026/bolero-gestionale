@@ -77,6 +77,13 @@ export default async function FatturePage({
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <a
+            href="/api/export/fatture"
+            download
+            className="flex items-center gap-1.5 rounded-md border border-fog px-3.5 py-2 text-sm font-semibold text-ink2 transition hover:border-copper hover:text-copper"
+          >
+            ↓ CSV
+          </a>
           {canApprove && (
             <Link
               href="/fatture/promemoria"

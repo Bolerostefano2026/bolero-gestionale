@@ -55,15 +55,24 @@ export default async function PreventiviPage({
             )}
           </p>
         </div>
-        {canWrite && (
-          <Link
-            href="/preventivi/nuovo"
-            className="flex items-center gap-1.5 rounded-md bg-copper px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-copper-lt"
+        <div className="flex items-center gap-2">
+          <a
+            href="/api/export/preventivi"
+            download
+            className="flex items-center gap-1.5 rounded-md border border-fog px-3.5 py-2 text-sm font-semibold text-ink2 transition hover:border-copper hover:text-copper"
           >
-            <Plus size={15} />
-            Nuovo preventivo
-          </Link>
-        )}
+            ↓ CSV
+          </a>
+          {canWrite && (
+            <Link
+              href="/preventivi/nuovo"
+              className="flex items-center gap-1.5 rounded-md bg-copper px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-copper-lt"
+            >
+              <Plus size={15} />
+              Nuovo preventivo
+            </Link>
+          )}
+        </div>
       </div>
 
       <form className="mb-4 flex flex-wrap items-center gap-2">
