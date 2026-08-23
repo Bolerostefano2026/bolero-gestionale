@@ -6,6 +6,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasPermission } from "@/lib/permissions";
 import { notify } from "@/lib/notify";
+import { notificaTitolari } from "@/lib/email";
 
 const appointmentSchema = z.object({
   clientId: z.string().uuid("Seleziona un cliente"),
@@ -53,6 +54,19 @@ export async function createAppointment(formData: FormData) {
       link: "/calendario",
     });
   }
+
+  const tipoLabel: Record<string, string> = {
+    APPUNTAMENTO: "Appuntamento",
+    SOPRALLUOGO: "Sopralluogo",
+    MONTAGGIO: "Montaggio",
+    ALTRO: "Altro",
+  };
+  void notificaTitolari({
+    oggetto: `📅 Nuovo appuntamento — ${appointment.client.name} ${appointment.client.surname}`,
+    titolo: `${tipoLabel[appointment.type] ?? appointment.type} fissato`,
+    corpo: `${appointment.client.name} ${appointment.client.surname} · ${appointment.scheduledAt.toLocaleDateString("it-IT")} alle ${appointment.scheduledAt.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" })}${appointment.address ? ` · ${appointment.address}` : ""}`,
+    link: `${process.env.NEXTAUTH_URL ?? ""}/calendario`,
+  });
 
   revalidatePath("/calendario");
 }

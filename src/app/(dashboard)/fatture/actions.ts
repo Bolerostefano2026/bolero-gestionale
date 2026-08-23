@@ -70,6 +70,18 @@ export async function createInvoice(formData: FormData) {
     },
   });
 
+  const client = await prisma.client.findUnique({
+    where: { id: clientId },
+    select: { name: true, surname: true },
+  });
+  const money = (n: number) => `CHF ${n.toLocaleString("it-CH", { minimumFractionDigits: 2 })}`;
+  void (await import("@/lib/email")).notificaTitolari({
+    oggetto: `🧾 Nuova fattura ${number} — ${client?.name} ${client?.surname}`,
+    titolo: `Fattura ${number} creata`,
+    corpo: `Cliente: ${client?.name} ${client?.surname}<br>Totale: ${money(total)}<br>Scadenza: ${new Date(dueDate).toLocaleDateString("it-IT")}`,
+    link: `${process.env.NEXTAUTH_URL ?? ""}/fatture/${invoice.id}`,
+  });
+
   revalidatePath("/fatture");
   return invoice.id;
 }
@@ -116,8 +128,24 @@ export async function recordPayment(invoiceId: string, formData: FormData) {
   const paidSoFar =
     invoice.payments.reduce((sum, p) => sum + Number(p.amount), 0) + parsed.data.amount;
 
+  const moneyFmt = (n: number) => `CHF ${n.toLocaleString("it-CH", { minimumFractionDigits: 2 })}`;
   if (paidSoFar >= Number(invoice.total)) {
     await prisma.invoice.update({ where: { id: invoiceId }, data: { status: "PAGATA" } });
+    const invClient = await prisma.client.findUnique({ where: { id: invoice.clientId }, select: { name: true, surname: true } });
+    void (await import("@/lib/email")).notificaTitolari({
+      oggetto: `✅ Fattura ${invoice.number} — pagamento completo`,
+      titolo: `Fattura saldata completamente`,
+      corpo: `${invClient?.name} ${invClient?.surname} ha completato il pagamento della fattura ${invoice.number} · ${moneyFmt(Number(invoice.total))}`,
+      link: `${process.env.NEXTAUTH_URL ?? ""}/fatture/${invoiceId}`,
+    });
+  } else {
+    const invClient = await prisma.client.findUnique({ where: { id: invoice.clientId }, select: { name: true, surname: true } });
+    void (await import("@/lib/email")).notificaTitolari({
+      oggetto: `💰 Pagamento parziale — fattura ${invoice.number}`,
+      titolo: `Pagamento registrato`,
+      corpo: `${invClient?.name} ${invClient?.surname} · Ricevuto ${moneyFmt(parsed.data.amount)} via ${parsed.data.method}<br>Residuo: ${moneyFmt(Number(invoice.total) - paidSoFar)}`,
+      link: `${process.env.NEXTAUTH_URL ?? ""}/fatture/${invoiceId}`,
+    });
   }
 
   revalidatePath("/fatture");

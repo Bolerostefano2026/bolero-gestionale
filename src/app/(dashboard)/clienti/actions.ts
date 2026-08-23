@@ -5,6 +5,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasPermission } from "@/lib/permissions";
+import { notificaTitolari } from "@/lib/email";
 
 const clientSchema = z.object({
   name: z.string().min(1, "Il nome è obbligatorio"),
@@ -46,6 +47,13 @@ export async function createClient(formData: FormData) {
       action: "create",
       source: "manual",
     },
+  });
+
+  void notificaTitolari({
+    oggetto: `👤 Nuovo cliente — ${parsed.data.name} ${parsed.data.surname}`,
+    titolo: `Nuovo cliente aggiunto`,
+    corpo: `${parsed.data.name} ${parsed.data.surname}${parsed.data.city ? ` · ${parsed.data.city}` : ""}${parsed.data.phone ? ` · ${parsed.data.phone}` : ""}`,
+    link: `${process.env.NEXTAUTH_URL ?? ""}/clienti/${client.id}`,
   });
 
   revalidatePath("/clienti");
