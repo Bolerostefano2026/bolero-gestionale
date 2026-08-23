@@ -35,8 +35,8 @@ export function StatCard({
 }) {
   const card = (
     <div
-      className="relative overflow-hidden rounded-2xl bg-surface border border-fog h-full transition-all duration-150 group-hover:shadow-xl group-hover:-translate-y-[3px]"
-      style={{ boxShadow: "var(--shadow-sm)", minHeight: "110px" }}
+      className="relative overflow-hidden rounded-2xl border border-fog h-full transition-all duration-150 group-hover:shadow-xl group-hover:-translate-y-[3px]"
+      style={{ background: "var(--surface)", boxShadow: "var(--shadow-sm)", minHeight: "110px" }}
     >
       {/* Barra colorata in alto */}
       <div
