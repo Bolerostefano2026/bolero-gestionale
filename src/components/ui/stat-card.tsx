@@ -54,8 +54,8 @@ export function StatCard({
         <div className="flex items-center gap-2">
           <Icon size={18} strokeWidth={1.8} style={{ color: TONE_ICON[tone], flexShrink: 0 }} />
           <p
-            className="text-sm font-bold uppercase tracking-[0.07em] leading-tight"
-            style={{ color: "var(--ink3)" }}
+            className="text-sm font-black uppercase tracking-[0.06em] leading-tight"
+            style={{ color: "var(--ink2)" }}
           >
             {label}
           </p>
