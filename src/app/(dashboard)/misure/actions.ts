@@ -88,6 +88,64 @@ export async function createMeasurement(formData: FormData) {
   return measurement.id;
 }
 
+const updateSchema = z.object({
+  data: z.string(),
+  photos: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+export async function updateMeasurement(measurementId: string, formData: FormData) {
+  const session = await requireWrite();
+
+  const parsed = updateSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Dati non validi");
+  }
+
+  const measurement = await prisma.measurement.findUniqueOrThrow({
+    where: { id: measurementId },
+    include: { template: true },
+  });
+
+  const fields =
+    (measurement.fieldsSnapshot as unknown as FieldDef[] | null)?.length
+      ? (measurement.fieldsSnapshot as unknown as FieldDef[])
+      : (measurement.template.fields as unknown as FieldDef[]);
+
+  let data: Record<string, unknown>;
+  let photos: { url: string; caption?: string }[] = [];
+  try {
+    data = JSON.parse(parsed.data.data);
+    if (parsed.data.photos) photos = JSON.parse(parsed.data.photos);
+  } catch {
+    throw new Error("Dati della scheda non validi");
+  }
+
+  validateAgainstTemplate(fields, data);
+
+  await prisma.measurement.update({
+    where: { id: measurementId },
+    data: {
+      data: data as Prisma.InputJsonValue,
+      photos: photos as unknown as Prisma.InputJsonValue,
+      notes: parsed.data.notes,
+    },
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      userId: session.user.id,
+      entityType: "measurement",
+      entityId: measurementId,
+      action: "update",
+      source: "manual",
+    },
+  });
+
+  revalidatePath("/misure");
+  revalidatePath(`/misure/${measurementId}`);
+}
+
 export async function deleteMeasurement(measurementId: string) {
   const session = await auth();
   if (!hasPermission(session?.user.permissions, "measurements:write")) {
