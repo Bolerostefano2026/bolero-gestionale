@@ -65,6 +65,7 @@ export default async function QuoteDetailPage({
         clients={clients}
         canWrite={hasPermission(user.permissions, "quotes:write")}
         canApprove={hasPermission(user.permissions, "quotes:approve")}
+        canWriteInvoices={hasPermission(user.permissions, "invoices:write")}
         versionCount={versionCount}
       />
     </div>

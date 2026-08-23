@@ -7,6 +7,7 @@ import { hasPermission } from "@/lib/permissions";
 import { StatCard } from "@/components/ui/stat-card";
 import { Badge } from "@/components/ui/badge";
 import { AiBriefing, AiBriefingSkeleton } from "@/components/dashboard/ai-briefing";
+import { CompleteAppointmentButton } from "@/components/dashboard/complete-appointment-button";
 import { APPOINTMENT_STATUS, APPOINTMENT_TYPE } from "@/lib/labels";
 import type { Prisma } from "@prisma/client";
 
@@ -237,7 +238,12 @@ export default async function DashboardPage() {
                       </strong>{" "}
                       · {APPOINTMENT_TYPE[a.type]} — {a.client.name} {a.client.surname}
                     </span>
-                    <Badge label={s.label} tone={s.tone} />
+                    <div className="flex items-center gap-2">
+                      <Badge label={s.label} tone={s.tone} />
+                      {a.status !== "COMPLETATO" && a.status !== "ANNULLATO" && (
+                        <CompleteAppointmentButton appointmentId={a.id} />
+                      )}
+                    </div>
                   </li>
                 );
               })}

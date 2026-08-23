@@ -186,14 +186,14 @@ ${contenuto}`;
 
     ${sezione(`📅 Appuntamenti svolti — ${nomeMese}`,
       tabella(riga("Totale", String(appuntamentiSvolti.length))) +
-      elenco(appuntamentiSvolti.map((a) => `${formatDate(a.scheduledAt)} ${formatTime(a.scheduledAt)} · ${a.client.name} ${a.client.surname}${a.title ? ` — ${a.title}` : ""}`))
+      elenco(appuntamentiSvolti.map((a) => `${formatDate(a.scheduledAt)} ${formatTime(a.scheduledAt)} · ${a.client.name} ${a.client.surname}${a.notes ? ` — ${a.notes}` : ""}`))
     )}
 
     ${sezione(`📆 Appuntamenti in programma — ${nomeMeseProssimo}`,
       tabella(riga("Totale programmati", String(appuntamentiProssimi.length))) +
       elenco(appuntamentiProssimi.map((a) => {
         const ass = a.assignedTo ? ` [${a.assignedTo.name}]` : "";
-        return `${formatDate(a.scheduledAt)} ${formatTime(a.scheduledAt)} · ${a.client.name} ${a.client.surname}${a.title ? ` — ${a.title}` : ""}${ass}`;
+        return `${formatDate(a.scheduledAt)} ${formatTime(a.scheduledAt)} · ${a.client.name} ${a.client.surname}${a.notes ? ` — ${a.notes}` : ""}${ass}`;
       }))
     )}
 
@@ -263,7 +263,7 @@ Generato il ${formatDate(now)} dal gestionale BOLERO.
 
   // ── Recupera email titolare ──────────────────────────────────────────────
   const titolari = await prisma.user.findMany({
-    where: { role: "TITOLARE", active: true },
+    where: { role: { name: "TITOLARE" }, active: true },
     select: { email: true, name: true },
   });
 

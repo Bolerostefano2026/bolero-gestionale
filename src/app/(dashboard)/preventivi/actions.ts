@@ -220,3 +220,56 @@ export async function deleteQuote(quoteId: string) {
   await prisma.quote.delete({ where: { id: quoteId } });
   revalidatePath("/preventivi");
 }
+
+export async function convertQuoteToInvoice(quoteId: string, dueDateStr: string): Promise<string> {
+  const session = await auth();
+  if (!hasPermission(session?.user.permissions, "invoices:write")) {
+    throw new Error("Permesso negato: servono i permessi fatture");
+  }
+
+  const quote = await prisma.quote.findUniqueOrThrow({
+    where: { id: quoteId },
+    include: { client: { select: { name: true, surname: true } } },
+  });
+
+  if (!["APPROVATO", "CONVERTITO"].includes(quote.status)) {
+    throw new Error("Solo i preventivi approvati possono essere convertiti in fattura");
+  }
+
+  const year = new Date().getFullYear();
+  const count = await prisma.invoice.count({ where: { number: { startsWith: `FT-${year}-` } } });
+  const number = `FT-${year}-${String(count + 1).padStart(4, "0")}`;
+
+  const items = (quote.items as { description: string; quantity: number; unitPrice: number }[]).map(
+    (i) => ({ description: i.description, amount: i.quantity * i.unitPrice })
+  );
+
+  const invoice = await prisma.invoice.create({
+    data: {
+      number,
+      clientId: quote.clientId,
+      quoteId: quote.id,
+      items,
+      total: quote.total,
+      dueDate: new Date(dueDateStr),
+      createdById: session!.user.id,
+    },
+  });
+
+  await prisma.quote.update({ where: { id: quoteId }, data: { status: "CONVERTITO" } });
+
+  await prisma.auditLog.create({
+    data: {
+      userId: session!.user.id,
+      entityType: "invoice",
+      entityId: invoice.id,
+      action: "create:from_quote",
+      source: "manual",
+    },
+  });
+
+  revalidatePath("/preventivi");
+  revalidatePath(`/preventivi/${quoteId}`);
+  revalidatePath("/fatture");
+  return invoice.id;
+}

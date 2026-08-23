@@ -119,6 +119,7 @@ export default async function PreventiviPage({
               <th className="px-4 py-2.5 font-semibold">Cliente</th>
               <th className="px-4 py-2.5 text-right font-semibold">Totale CHF</th>
               <th className="px-4 py-2.5 font-semibold">Stato</th>
+              <th className="px-4 py-2.5 font-semibold hidden sm:table-cell">Scadenza</th>
               <th className="px-4 py-2.5 font-semibold">Data</th>
             </tr>
           </thead>
@@ -149,6 +150,15 @@ export default async function PreventiviPage({
                   <td className="px-4 py-2.5">
                     <Badge label={s.label} tone={s.tone} />
                   </td>
+                  <td className="px-4 py-2.5 hidden sm:table-cell">
+                    {q.validUntil ? (
+                      <span className={q.validUntil < new Date() && !["APPROVATO","CONVERTITO","COMPLETATO","RIFIUTATO"].includes(q.status) ? "font-semibold text-danger" : "text-ink3"}>
+                        {q.validUntil.toLocaleDateString("it-IT")}
+                      </span>
+                    ) : (
+                      <span className="text-ink3">—</span>
+                    )}
+                  </td>
                   <td className="px-4 py-2.5 text-ink3">
                     {q.createdAt.toLocaleDateString("it-IT")}
                   </td>
@@ -157,7 +167,7 @@ export default async function PreventiviPage({
             })}
             {quotes.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-10 text-center text-ink3">
+                <td colSpan={6} className="px-4 py-10 text-center text-ink3">
                   Nessun preventivo trovato.
                 </td>
               </tr>

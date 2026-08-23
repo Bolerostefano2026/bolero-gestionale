@@ -26,6 +26,7 @@ import {
 import { EditClientPanel } from "./edit-panel";
 import { DeleteClientButton } from "./delete-button";
 import { ClientTimeline, type TimelineEvent } from "./timeline";
+import { ClientNoteForm } from "./client-note-form";
 
 export default async function ClientDetailPage({
   params,
@@ -377,11 +378,29 @@ export default async function ClientDetailPage({
           )}
         </div>
 
-        <div className="rounded-lg border border-fog bg-surface p-6">
-          <h2 className="mb-4 font-display text-sm font-bold uppercase tracking-wide text-ink">
-            Timeline
-          </h2>
-          <ClientTimeline events={events} />
+        <div className="space-y-6">
+          <div className="rounded-lg border border-fog bg-surface p-6">
+            <h2 className="mb-4 font-display text-sm font-bold uppercase tracking-wide text-ink">
+              Timeline
+            </h2>
+            <ClientTimeline events={events} />
+          </div>
+
+          {canWrite && (
+            <div className="rounded-lg border border-fog bg-surface p-6">
+              <h2 className="mb-3 font-display text-sm font-bold uppercase tracking-wide text-ink">
+                Note interne
+              </h2>
+              {client.notes && (
+                <div className="mb-4 max-h-48 overflow-y-auto rounded-md border border-fog bg-sunken p-3">
+                  {client.notes.split("\n").filter(Boolean).reverse().map((line, i) => (
+                    <p key={i} className="mb-1.5 text-xs text-ink2 last:mb-0 whitespace-pre-wrap">{line}</p>
+                  ))}
+                </div>
+              )}
+              <ClientNoteForm clientId={client.id} />
+            </div>
+          )}
         </div>
       </div>
     </div>

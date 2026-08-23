@@ -87,6 +87,38 @@ export async function updateClient(clientId: string, formData: FormData) {
   revalidatePath(`/clienti/${clientId}`);
 }
 
+export async function addClientNote(clientId: string, note: string) {
+  const session = await requireWrite();
+  const trimmed = note.trim();
+  if (!trimmed) throw new Error("La nota non può essere vuota");
+
+  const client = await prisma.client.findUniqueOrThrow({
+    where: { id: clientId },
+    select: { notes: true },
+  });
+
+  const timestamp = new Date().toLocaleString("it-IT", {
+    day: "2-digit", month: "2-digit", year: "numeric",
+    hour: "2-digit", minute: "2-digit",
+  });
+  const entry = `[${timestamp}] ${trimmed}`;
+  const updated = client.notes ? `${client.notes}\n${entry}` : entry;
+
+  await prisma.client.update({ where: { id: clientId }, data: { notes: updated } });
+
+  await prisma.auditLog.create({
+    data: {
+      userId: session.user.id,
+      entityType: "client",
+      entityId: clientId,
+      action: "note:add",
+      source: "manual",
+    },
+  });
+
+  revalidatePath(`/clienti/${clientId}`);
+}
+
 export async function deleteClient(clientId: string) {
   const session = await auth();
   if (!hasPermission(session?.user.permissions, "clients:delete")) {

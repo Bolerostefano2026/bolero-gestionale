@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { Pencil, Download } from "lucide-react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { Pencil, Download, Receipt } from "lucide-react";
 import { QuoteForm } from "../quote-form";
 import { StatusActions } from "./status-actions";
 import { Badge } from "@/components/ui/badge";
 import { QUOTE_STATUS } from "@/lib/labels";
+import { convertQuoteToInvoice } from "../actions";
 
 type Item = { description: string; quantity: number; unitPrice: number };
 
@@ -18,6 +20,7 @@ export function QuoteView({
   clients,
   canWrite,
   canApprove,
+  canWriteInvoices,
   versionCount,
 }: {
   quote: {
@@ -38,9 +41,18 @@ export function QuoteView({
   clients: { id: string; name: string; surname: string }[];
   canWrite: boolean;
   canApprove: boolean;
+  canWriteInvoices: boolean;
   versionCount: number;
 }) {
   const [editing, setEditing] = useState(false);
+  const [convertOpen, setConvertOpen] = useState(false);
+  const [dueDate, setDueDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 30);
+    return d.toISOString().slice(0, 10);
+  });
+  const [converting, startConvert] = useTransition();
+  const router = useRouter();
   const s = QUOTE_STATUS[quote.status];
 
   if (editing) {
@@ -72,7 +84,7 @@ export function QuoteView({
             </span>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <a
             href={`/api/preventivi/${quote.id}/pdf`}
             target="_blank"
@@ -92,8 +104,57 @@ export function QuoteView({
               Modifica
             </button>
           )}
+          {canWriteInvoices && ["APPROVATO", "CONVERTITO"].includes(quote.status) && (
+            <button
+              type="button"
+              onClick={() => setConvertOpen(true)}
+              className="flex items-center gap-1.5 rounded-md bg-copper px-3 py-2 text-sm font-semibold text-white transition hover:bg-copper-lt"
+            >
+              <Receipt size={14} />
+              Converti in fattura
+            </button>
+          )}
         </div>
       </div>
+
+      {convertOpen && (
+        <div className="rounded-lg border border-copper/40 bg-copper-bg p-5">
+          <p className="mb-3 text-sm font-semibold text-ink">Converti in fattura</p>
+          <div className="flex flex-wrap items-end gap-3">
+            <div>
+              <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-ink3">
+                Scadenza pagamento
+              </label>
+              <input
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                className="rounded-md border border-fog bg-canvas px-3 py-1.5 text-sm outline-none focus:border-copper"
+              />
+            </div>
+            <button
+              type="button"
+              disabled={converting}
+              onClick={() =>
+                startConvert(async () => {
+                  const invoiceId = await convertQuoteToInvoice(quote.id, dueDate);
+                  router.push(`/fatture/${invoiceId}`);
+                })
+              }
+              className="rounded-md bg-copper px-4 py-1.5 text-sm font-semibold text-white disabled:opacity-60"
+            >
+              {converting ? "Creazione…" : "Crea fattura"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setConvertOpen(false)}
+              className="text-sm text-ink3 hover:text-ink"
+            >
+              Annulla
+            </button>
+          </div>
+        </div>
+      )}
 
       <StatusActions
         quoteId={quote.id}
