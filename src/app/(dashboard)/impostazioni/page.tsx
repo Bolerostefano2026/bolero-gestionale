@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { Settings, Ruler, Plug, ChevronRight, User } from "lucide-react";
+import { Settings, Ruler, Plug, ChevronRight, User, Code2 } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasPermission } from "@/lib/permissions";
+import { isDeveloper } from "@/lib/developer";
 import { ComingSoon } from "@/components/ui/coming-soon";
 import { CreateUserForm } from "./create-user-form";
 import { UserActiveToggle } from "./user-active-toggle";
@@ -22,6 +23,8 @@ export default async function ImpostazioniPage() {
       />
     );
   }
+
+  const dev = isDeveloper(user.email);
 
   const [users, roles] = await Promise.all([
     prisma.user.findMany({
@@ -60,41 +63,63 @@ export default async function ImpostazioniPage() {
         <ChevronRight size={16} className="text-ink3" />
       </Link>
 
-      <Link
-        href="/impostazioni/prodotti"
-        className="mb-6 flex items-center justify-between rounded-lg border border-fog bg-surface p-5 transition hover:border-copper"
-      >
-        <div className="flex items-center gap-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-md bg-copper-bg text-copper">
-            <Ruler size={17} />
-          </span>
-          <div>
-            <p className="text-sm font-semibold text-ink">Prodotti &amp; schede misure</p>
-            <p className="text-xs text-ink2">
-              Configura i prodotti e i campi delle schede di misurazione
-            </p>
-          </div>
-        </div>
-        <ChevronRight size={16} className="text-ink3" />
-      </Link>
+      {dev && (
+        <>
+          <Link
+            href="/impostazioni/prodotti"
+            className="mb-4 flex items-center justify-between rounded-lg border border-fog bg-surface p-5 transition hover:border-copper"
+          >
+            <div className="flex items-center gap-3">
+              <span className="flex h-9 w-9 items-center justify-center rounded-md bg-copper-bg text-copper">
+                <Ruler size={17} />
+              </span>
+              <div>
+                <p className="text-sm font-semibold text-ink">Prodotti &amp; schede misure</p>
+                <p className="text-xs text-ink2">
+                  Configura i prodotti e i campi delle schede di misurazione
+                </p>
+              </div>
+            </div>
+            <ChevronRight size={16} className="text-ink3" />
+          </Link>
 
-      <Link
-        href="/impostazioni/integrazioni"
-        className="mb-6 flex items-center justify-between rounded-lg border border-fog bg-surface p-5 transition hover:border-copper"
-      >
-        <div className="flex items-center gap-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-md bg-copper-bg text-copper">
-            <Plug size={17} />
-          </span>
-          <div>
-            <p className="text-sm font-semibold text-ink">Integrazioni</p>
-            <p className="text-xs text-ink2">
-              Google Calendar, Google Sheets ed email transazionali
-            </p>
-          </div>
-        </div>
-        <ChevronRight size={16} className="text-ink3" />
-      </Link>
+          <Link
+            href="/impostazioni/integrazioni"
+            className="mb-4 flex items-center justify-between rounded-lg border border-fog bg-surface p-5 transition hover:border-copper"
+          >
+            <div className="flex items-center gap-3">
+              <span className="flex h-9 w-9 items-center justify-center rounded-md bg-copper-bg text-copper">
+                <Plug size={17} />
+              </span>
+              <div>
+                <p className="text-sm font-semibold text-ink">Integrazioni</p>
+                <p className="text-xs text-ink2">
+                  Google Calendar, Google Sheets ed email transazionali
+                </p>
+              </div>
+            </div>
+            <ChevronRight size={16} className="text-ink3" />
+          </Link>
+
+          <Link
+            href="/impostazioni/developer"
+            className="mb-6 flex items-center justify-between rounded-lg border border-copper/40 bg-copper-bg p-5 transition hover:border-copper"
+          >
+            <div className="flex items-center gap-3">
+              <span className="flex h-9 w-9 items-center justify-center rounded-md bg-copper text-white">
+                <Code2 size={17} />
+              </span>
+              <div>
+                <p className="text-sm font-semibold text-ink">Developer</p>
+                <p className="text-xs text-ink2">
+                  Feature flags, configurazione avanzata — solo Daniele Tarantino
+                </p>
+              </div>
+            </div>
+            <ChevronRight size={16} className="text-ink3" />
+          </Link>
+        </>
+      )}
 
       <div className="mb-6 flex justify-end">
         <CreateUserForm roles={roles.map((r) => ({ id: r.id, label: r.label }))} />

@@ -476,3 +476,13 @@ model AuditLog {
   @@index([entityType, entityId])
   @@index([userId])
 }
+
+model FeatureFlag {
+  key         String   @id
+  label       String
+  description String?
+  enabled     Boolean  @default(false)
+  updatedAt   DateTime @updatedAt
+
+  @@map("feature_flags")
+}
