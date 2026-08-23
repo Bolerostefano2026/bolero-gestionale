@@ -1,6 +1,10 @@
 @import "tailwindcss";
 
+/* Tema fisso chiaro — nessun dark mode. color-scheme: light forza il tema
+   indipendentemente dall'OS e da qualsiasi media query. */
 :root {
+  color-scheme: light;
+
   /* Canvas — bianco puro con sfumatura azzurra leggerissima */
   --canvas:     #FFFFFF;
   --surface:    #F8FAFF;
@@ -39,7 +43,13 @@
   --shadow-md: 0 2px 8px rgba(13,27,62,.08), 0 8px 28px rgba(37,99,235,.07);
 }
 
-/* dark mode rimosso — gestionale sempre in tema chiaro */
+/* Dark mode RIMOSSO. Non aggiungere @media prefers-color-scheme: dark.
+   Il tema chiaro è forzato via color-scheme: light sul :root. */
+
+/* Forza tema chiaro anche se l'OS è in dark mode */
+html, :root {
+  color-scheme: light only;
+}
 
 @theme inline {
   --color-canvas:       var(--canvas);
