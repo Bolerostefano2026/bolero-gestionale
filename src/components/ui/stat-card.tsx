@@ -50,7 +50,7 @@ export function StatCard({
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
             <Icon size={16} strokeWidth={1.5} style={{ color: TONE_ICON[tone] }} />
-            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-ink3">{label}</p>
+            <p className="text-base font-bold uppercase tracking-[0.08em] text-ink3">{label}</p>
           </div>
           {href && (
             <p
