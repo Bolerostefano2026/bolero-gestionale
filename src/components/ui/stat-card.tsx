@@ -35,8 +35,13 @@ export function StatCard({
 }) {
   const card = (
     <div
-      className="relative overflow-hidden rounded-2xl border border-fog h-full transition-all duration-150 group-hover:shadow-xl group-hover:-translate-y-[3px]"
-      style={{ background: "var(--surface)", boxShadow: "var(--shadow-sm)", minHeight: "110px" }}
+      className="relative overflow-hidden rounded-2xl border border-fog h-full flex flex-col justify-between
+                 transition-all duration-150 active:scale-[0.97] group-hover:shadow-xl group-hover:-translate-y-[2px]"
+      style={{
+        background: "var(--surface)",
+        boxShadow: "var(--shadow-sm)",
+        minHeight: "120px",
+      }}
     >
       {/* Barra colorata in alto */}
       <div
@@ -44,37 +49,41 @@ export function StatCard({
         style={{ background: TONE_BAR[tone] }}
       />
 
-      {/* Layout orizzontale: sinistra label+icona, destra numero */}
-      <div className="flex h-full items-center justify-between px-6 py-5">
-        {/* Sinistra */}
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <Icon size={16} strokeWidth={1.5} style={{ color: TONE_ICON[tone] }} />
-            <p className="text-base font-bold uppercase tracking-[0.08em] text-ink3">{label}</p>
-          </div>
-          {href && (
-            <p
-              className="text-[11px] font-semibold opacity-0 group-hover:opacity-100 transition-opacity"
-              style={{ color: "var(--copper-lt)" }}
-            >
-              Apri →
-            </p>
-          )}
+      <div className="flex flex-col gap-3 px-5 pt-6 pb-5">
+        {/* Icona + label */}
+        <div className="flex items-center gap-2">
+          <Icon size={18} strokeWidth={1.8} style={{ color: TONE_ICON[tone], flexShrink: 0 }} />
+          <p
+            className="text-sm font-bold uppercase tracking-[0.07em] leading-tight"
+            style={{ color: "var(--ink3)" }}
+          >
+            {label}
+          </p>
         </div>
 
-        {/* Destra — numero grande */}
+        {/* Numero — grande, bold, leggibile */}
         <p
-          className="font-display tabular-nums leading-none"
+          className="tabular-nums leading-none"
           style={{
-            fontSize: "clamp(2rem, 4vw, 3rem)",
-            fontWeight: 300,
-            fontStyle: "italic",
+            fontSize: "clamp(2.2rem, 8vw, 3rem)",
+            fontWeight: 700,
             color: TONE_NUM[tone],
+            letterSpacing: "-0.02em",
           }}
         >
           {value}
         </p>
       </div>
+
+      {/* Footer tap hint — visibile solo su hover desktop */}
+      {href && (
+        <div
+          className="px-5 pb-3 text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity hidden md:block"
+          style={{ color: "var(--copper-lt)" }}
+        >
+          Apri →
+        </div>
+      )}
     </div>
   );
 

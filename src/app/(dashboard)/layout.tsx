@@ -117,7 +117,7 @@ export default async function DashboardLayout({
           </div>
         </header>
 
-        <main className="flex-1 overflow-auto px-6 py-7 md:px-8 md:py-8">{children}</main>
+        <main className="flex-1 overflow-auto px-4 py-5 md:px-8 md:py-8">{children}</main>
       </div>
     </div>
   );
