@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/cron/update-overdue",
-      "schedule": "0 * * * *"
+      "schedule": "0 6 * * *"
     },
     {
       "path": "/api/cron/self-check",
