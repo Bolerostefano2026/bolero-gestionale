@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { generateObject } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { z } from "zod";
@@ -199,12 +200,14 @@ function isValidPriority(p: { link?: string }): boolean {
  * comunque un briefing basato su regole deterministiche: la dashboard non resta
  * mai vuota per un problema di configurazione.
  */
-export async function generateBriefing(): Promise<Briefing> {
+const _generateBriefingUncached = async (): Promise<Briefing> => {
   const snapshot = await collectSnapshot();
   const ollamaBase = process.env.OLLAMA_BASE_URL ?? "http://localhost:11434/v1";
-  const ollamaReachable = await fetch(`${ollamaBase.replace("/v1", "")}/api/tags`)
-    .then(() => true)
-    .catch(() => false);
+  // Skip Ollama in produzione (Vercel) — non raggiungibile e aggiunge latenza
+  const isLocalDev = process.env.NODE_ENV === "development" || !!process.env.OLLAMA_BASE_URL;
+  const ollamaReachable = isLocalDev
+    ? await fetch(`${ollamaBase.replace("/v1", "")}/api/tags`).then(() => true).catch(() => false)
+    : false;
 
   if (ollamaReachable) {
     try {
@@ -294,4 +297,11 @@ Regole di contenuto:
         : "Tutto in ordine: nessuna scadenza critica e nessun appuntamento oggi.";
 
   return { saluto, priorita: priorita.slice(0, 5), generatoDaAi: false };
-}
+};
+
+// Cache per 5 minuti: evita 7+ query DB + eventuale chiamata AI ad ogni ricarica dashboard
+export const generateBriefing = unstable_cache(
+  _generateBriefingUncached,
+  ["briefing"],
+  { revalidate: 300 }
+);

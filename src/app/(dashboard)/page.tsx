@@ -1,3 +1,5 @@
+export const revalidate = 30;
+
 import Link from "next/link";
 import { Suspense } from "react";
 import { Users, CalendarClock, FileText, Wrench, AlertTriangle } from "lucide-react";
