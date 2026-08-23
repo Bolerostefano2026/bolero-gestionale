@@ -13,6 +13,12 @@ const TONE_ICON: Record<string, string> = {
   success: "var(--success)",
   warn:    "var(--warn)",
 };
+const TONE_NUM: Record<string, string> = {
+  neutral: "var(--ink)",
+  copper:  "var(--copper)",
+  success: "var(--success)",
+  warn:    "var(--warn)",
+};
 
 export function StatCard({
   label,
@@ -29,40 +35,49 @@ export function StatCard({
 }) {
   const card = (
     <div
-      className="relative overflow-hidden rounded-xl bg-surface px-5 py-4 h-full border border-fog transition-all duration-150 group-hover:shadow-lg group-hover:-translate-y-[2px]"
-      style={{ boxShadow: "var(--shadow-sm)" }}
+      className="relative overflow-hidden rounded-2xl bg-surface border border-fog h-full transition-all duration-150 group-hover:shadow-xl group-hover:-translate-y-[3px]"
+      style={{ boxShadow: "var(--shadow-sm)", minHeight: "110px" }}
     >
+      {/* Barra colorata in alto */}
       <div
         className="absolute left-0 top-0 h-[3px] w-full"
         style={{ background: TONE_BAR[tone] }}
       />
-      <div className="mt-1.5 flex items-start justify-between">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-ink3">{label}</p>
-          <p
-            className="mt-2 font-display text-[32px] tabular-nums leading-none text-ink"
-            style={{ fontWeight: 300, fontStyle: "italic" }}
-          >
-            {value}
-          </p>
+
+      {/* Layout orizzontale: sinistra label+icona, destra numero */}
+      <div className="flex h-full items-center justify-between px-6 py-5">
+        {/* Sinistra */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <Icon size={16} strokeWidth={1.5} style={{ color: TONE_ICON[tone] }} />
+            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-ink3">{label}</p>
+          </div>
+          {href && (
+            <p
+              className="text-[11px] font-semibold opacity-0 group-hover:opacity-100 transition-opacity"
+              style={{ color: "var(--copper-lt)" }}
+            >
+              Apri →
+            </p>
+          )}
         </div>
-        <Icon size={17} strokeWidth={1.5} style={{ color: TONE_ICON[tone], marginTop: 2 }} />
-      </div>
-      {href && (
-        <p className="mt-3 text-[11px] font-medium opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: "var(--copper-lt)" }}>
-          Apri →
+
+        {/* Destra — numero grande */}
+        <p
+          className="font-display tabular-nums leading-none"
+          style={{
+            fontSize: "clamp(2rem, 4vw, 3rem)",
+            fontWeight: 300,
+            fontStyle: "italic",
+            color: TONE_NUM[tone],
+          }}
+        >
+          {value}
         </p>
-      )}
+      </div>
     </div>
   );
 
-  if (href) {
-    return (
-      <Link href={href} className="group block">
-        {card}
-      </Link>
-    );
-  }
-
+  if (href) return <Link href={href} className="group block h-full">{card}</Link>;
   return card;
 }
