@@ -11,6 +11,7 @@ import { FileDown } from "lucide-react";
 import { PaymentForm } from "./payment-form";
 import { ReminderButton } from "./reminder-button";
 import { MarkSentButton } from "./mark-sent-button";
+import { PrintButton } from "./print-button";
 
 function money(n: number) {
   return n.toLocaleString("it-CH", { minimumFractionDigits: 2 });
@@ -84,6 +85,7 @@ export default async function InvoiceDetailPage({
           )}
         </div>
         <div className="flex items-center gap-2">
+          <PrintButton invoiceId={invoice.id} />
           <a
             href={`/api/fatture/${invoice.id}/pdf`}
             target="_blank"
@@ -91,7 +93,7 @@ export default async function InvoiceDetailPage({
             className="flex items-center gap-1.5 rounded-md border border-fog px-3 py-1.5 text-sm font-medium text-ink2 hover:border-copper hover:text-copper"
           >
             <FileDown size={14} />
-            PDF
+            Scarica PDF
           </a>
           {canWrite && invoice.status === "BOZZA" && (
             <MarkSentButton invoiceId={invoice.id} />
