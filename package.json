@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && NEXT_PRIVATE_LOCAL_WEBPACK=1 next build",
-    "postbuild": "node -e \"const fs=require('fs'),p='.next/server/middleware.js.nft.json';if(!fs.existsSync(p)){fs.mkdirSync('.next/server',{recursive:true});fs.writeFileSync(p,JSON.stringify({version:1,files:[]}))}\"",
+    "build": "prisma generate && next build",
+    "postbuild": "node -e \"const fs=require('fs'),p='.next/server/proxy.js.nft.json';if(!fs.existsSync(p)){fs.mkdirSync('.next/server',{recursive:true});fs.writeFileSync(p,JSON.stringify({version:1,files:[]}))}\"",
     "start": "next start",
     "lint": "eslint",
     "db:generate": "prisma generate",
