@@ -39,35 +39,7 @@
   --shadow-md: 0 2px 8px rgba(13,27,62,.08), 0 8px 28px rgba(37,99,235,.07);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --canvas:     #090F20;
-    --surface:    #0E1629;
-    --sunken:     #060C1A;
-    --fog:        #182040;
-    --ink:        #DCE8FF;
-    --ink2:       #6B90C8;
-    --ink3:       #334870;
-    --copper:     #3B82F6;
-    --copper-lt:  #60A5FA;
-    --copper-bg:  #0D1E40;
-    --sidebar:        #060C1A;
-    --sidebar-hover:  #0C1830;
-    --sidebar-active: #102248;
-    --sidebar-ink:    #C0D8FF;
-    --sidebar-ink2:   #4070A8;
-    --sidebar-ink3:   #1E3860;
-    --success:    #10B981;
-    --success-bg: #052E20;
-    --warn:       #F59E0B;
-    --warn-bg:    #1C1200;
-    --danger:     #EF4444;
-    --danger-bg:  #200808;
-    --shadow-xs: 0 1px 2px rgba(0,0,0,.3);
-    --shadow-sm: 0 1px 4px rgba(0,0,0,.4), 0 4px 12px rgba(0,0,0,.25);
-    --shadow-md: 0 2px 8px rgba(0,0,0,.5), 0 8px 28px rgba(0,0,0,.35);
-  }
-}
+/* dark mode rimosso — gestionale sempre in tema chiaro */
 
 @theme inline {
   --color-canvas:       var(--canvas);
