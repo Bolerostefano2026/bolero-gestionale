@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import type React from "react";
 import { DM_Sans } from "next/font/google";
 import { Fraunces } from "next/font/google";
@@ -22,7 +22,6 @@ export const metadata: Metadata = {
   title: "BOLERO — Gestionale",
   description: "Sistema operativo digitale per montaggio, tende e pergole.",
   manifest: "/manifest.json",
-  themeColor: "#1A1410",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -31,6 +30,10 @@ export const metadata: Metadata = {
   other: {
     "mobile-web-app-capable": "yes",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#1A1410",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
