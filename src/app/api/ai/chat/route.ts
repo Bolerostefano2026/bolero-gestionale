@@ -1,13 +1,21 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
-import { runOrchestrator } from "@/lib/ai/orchestrator";
+import { runOrchestrator, type ConversationMessage } from "@/lib/ai/orchestrator";
 import { prisma } from "@/lib/prisma";
 import { verificaLimiti, registraConsumo } from "@/lib/ai/limits";
 
 export const runtime = "nodejs";
 
-const bodySchema = z.object({ message: z.string().min(1).max(2000) });
+const messageSchema = z.object({
+  role: z.enum(["user", "assistant"]),
+  content: z.string(),
+});
+
+const bodySchema = z.object({
+  message: z.string().min(1).max(2000),
+  history: z.array(messageSchema).max(20).optional(),
+});
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -25,7 +33,11 @@ export async function POST(req: Request) {
   }
 
   try {
-    const result = await runOrchestrator(parsed.data.message, session.user);
+    const result = await runOrchestrator(
+      parsed.data.message,
+      session.user,
+      parsed.data.history ?? []
+    );
     await registraConsumo(session.user.id, "chat", result.tokens);
 
     const actions =

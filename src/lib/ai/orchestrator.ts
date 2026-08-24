@@ -51,9 +51,12 @@ export type OrchestratorResult = {
   tokens: { input: number; output: number };
 };
 
+export type ConversationMessage = { role: "user" | "assistant"; content: string };
+
 export async function runOrchestrator(
   message: string,
-  session: Session["user"]
+  session: Session["user"],
+  history: ConversationMessage[] = []
 ): Promise<OrchestratorResult> {
   // Usa Anthropic se disponibile (produzione), Ollama come fallback locale
   const useAnthropic = !!process.env.ANTHROPIC_API_KEY;
@@ -103,10 +106,17 @@ export async function runOrchestrator(
     },
   });
 
+  // Includi la history della conversazione (max 10 scambi per non sprecare token)
+  const trimmedHistory = history.slice(-10);
+  const messages: Parameters<typeof generateText>[0]["messages"] = [
+    ...trimmedHistory.map((m) => ({ role: m.role, content: m.content })),
+    { role: "user" as const, content: message },
+  ];
+
   const result = await generateText({
     model,
     system: buildSystemPrompt(),
-    prompt: message,
+    messages,
     tools: { delegate: delegateTool },
     stopWhen: stepCountIs(6),
   });

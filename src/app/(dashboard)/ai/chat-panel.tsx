@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Send, Sparkles, Check, Pencil, Loader2 } from "lucide-react";
 
 type PendingAction = {
@@ -26,20 +26,32 @@ export function AiChatPanel() {
   const [input, setInput] = useState("");
   const [pending, setPending] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, pending]);
 
   async function send(text: string) {
     const message = text.trim();
     if (!message || pending) return;
 
-    setMessages((prev) => [...prev, { role: "user", content: message }]);
+    const updatedMessages = [...messages, { role: "user" as const, content: message }];
+    setMessages(updatedMessages);
     setInput("");
     setPending(true);
+
+    // Costruisce la history da passare all'API (solo scambi user/assistant)
+    const history = updatedMessages
+      .filter((m) => m.role === "user" || m.role === "assistant")
+      .slice(-10)
+      .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
 
     try {
       const res = await fetch("/api/ai/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ message, history }),
       });
       const data = await res.json();
 
@@ -189,6 +201,7 @@ export function AiChatPanel() {
             Bolero sta pensando…
           </div>
         )}
+        <div ref={bottomRef} />
       </div>
 
       <div className="flex items-center gap-2 border-t border-fog p-3">

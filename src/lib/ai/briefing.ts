@@ -1,5 +1,6 @@
 import { unstable_cache } from "next/cache";
 import { generateObject } from "ai";
+import { createAnthropic } from "@ai-sdk/anthropic";
 import { createOpenAI } from "@ai-sdk/openai";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
@@ -202,18 +203,12 @@ function isValidPriority(p: { link?: string }): boolean {
  */
 const _generateBriefingUncached = async (): Promise<Briefing> => {
   const snapshot = await collectSnapshot();
-  const ollamaBase = process.env.OLLAMA_BASE_URL ?? "http://localhost:11434/v1";
-  // Skip Ollama in produzione (Vercel) — non raggiungibile e aggiunge latenza
-  const isLocalDev = process.env.NODE_ENV === "development" || !!process.env.OLLAMA_BASE_URL;
-  const ollamaReachable = isLocalDev
-    ? await fetch(`${ollamaBase.replace("/v1", "")}/api/tags`).then(() => true).catch(() => false)
-    : false;
 
-  if (ollamaReachable) {
+  // 1. Anthropic (produzione Vercel) — priorità assoluta se la chiave è configurata
+  if (process.env.ANTHROPIC_API_KEY) {
     try {
-      const ollama = createOpenAI({ baseURL: ollamaBase, apiKey: "ollama" });
-      const model = ollama(process.env.OLLAMA_MODEL ?? "llama3.1:latest");
-
+      const anthropic = createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+      const model = anthropic("claude-haiku-4-5-20251001");
       const { object } = await generateObject({
         model,
         schema: briefingSchema,
