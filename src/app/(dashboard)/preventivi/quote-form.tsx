@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Upload, Loader2 } from "lucide-react";
 import { createQuote, updateQuote } from "./actions";
 
 const inputClass =
@@ -51,7 +51,34 @@ export function QuoteForm({
   const [vatRate, setVatRate] = useState(quote?.vatRate ?? 22);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [extracting, setExtracting] = useState(false);
+  const [extractError, setExtractError] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+
+  async function extractFromFile(file: File) {
+    setExtracting(true);
+    setExtractError(null);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/preventivi/extract", { method: "POST", body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Errore estrazione");
+      if (Array.isArray(data.items) && data.items.length > 0) {
+        setItems(data.items.map((it: Partial<Item>) => ({
+          description: it.description ?? "",
+          quantity: Number(it.quantity) || 1,
+          unitPrice: Number(it.unitPrice) || 0,
+        })));
+      }
+    } catch (e) {
+      setExtractError(e instanceof Error ? e.message : "Errore imprevisto");
+    } finally {
+      setExtracting(false);
+    }
+  }
 
   const subtotal = useMemo(
     () => items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0),
@@ -111,6 +138,49 @@ export function QuoteForm({
           ))}
         </select>
       </Field>
+
+      <div>
+        <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-ink2">
+          Preventivo fornitore (opzionale)
+        </label>
+        <div
+          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragOver(false);
+            const file = e.dataTransfer.files[0];
+            if (file) extractFromFile(file);
+          }}
+          onClick={() => fileInputRef.current?.click()}
+          className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed px-4 py-5 text-sm transition ${
+            dragOver ? "border-copper bg-sunken" : "border-fog hover:border-copper/60 hover:bg-sunken/50"
+          }`}
+        >
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/pdf,image/*"
+            className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) extractFromFile(f); }}
+          />
+          {extracting ? (
+            <>
+              <Loader2 size={20} className="animate-spin text-copper" />
+              <span className="text-ink2">Estrazione voci in corso…</span>
+            </>
+          ) : (
+            <>
+              <Upload size={20} className="text-ink3" />
+              <span className="text-ink2">Trascina qui il preventivo del fornitore (PDF o immagine)</span>
+              <span className="text-xs text-ink3">oppure clicca per selezionare il file</span>
+            </>
+          )}
+        </div>
+        {extractError && (
+          <p className="mt-1 text-xs text-danger">{extractError}</p>
+        )}
+      </div>
 
       <div>
         <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-ink2">
