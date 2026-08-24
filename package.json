@@ -17,6 +17,7 @@
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.39",
     "@ai-sdk/openai": "^4.0.44",
+    "@anthropic-ai/sdk": "^0.120.0",
     "@auth/prisma-adapter": "^2.11.3",
     "@prisma/client": "^6.19.3",
     "@radix-ui/react-avatar": "^1.2.6",

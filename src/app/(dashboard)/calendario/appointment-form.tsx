@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { createAppointment, updateAppointment, deleteAppointment } from "./actions";
 import { APPOINTMENT_TYPE } from "@/lib/labels";
+import { MapPin } from "lucide-react";
 
 const inputClass =
   "w-full rounded-md border border-fog bg-canvas px-3 py-2 text-sm outline-none focus:border-copper focus:ring-1 focus:ring-copper";
@@ -52,6 +53,7 @@ export function AppointmentForm({
   defaultDate?: Date;
   onDone: () => void;
 }) {
+  const [address, setAddress] = useState(appointment?.address ?? "");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -155,11 +157,25 @@ export function AppointmentForm({
       </div>
 
       <Field label="Indirizzo">
-        <input
-          name="address"
-          defaultValue={appointment?.address ?? ""}
-          className={inputClass}
-        />
+        <div className="flex gap-2">
+          <input
+            name="address"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            className={inputClass}
+          />
+          {address.trim() && (
+            <a
+              href={`https://maps.google.com/?q=${encodeURIComponent(address.trim())}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Apri in Google Maps"
+              className="flex shrink-0 items-center gap-1 rounded-md border border-fog bg-canvas px-3 py-2 text-sm text-copper hover:bg-sunken"
+            >
+              <MapPin size={14} />
+            </a>
+          )}
+        </div>
       </Field>
 
       <Field label="Note">
