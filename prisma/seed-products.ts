@@ -203,20 +203,17 @@ async function main() {
 
   for (let i = 0; i < PRODUCTS.length; i++) {
     const p = PRODUCTS[i];
-    const product = await prisma.product.upsert({
-      where: { name: p.name } as never,
-      update: {
-        category: p.category,
-        active: true,
-        sortOrder: i,
-      },
-      create: {
-        name: p.name,
-        category: p.category,
-        active: true,
-        sortOrder: i,
-      },
-    });
+    let product = await prisma.product.findFirst({ where: { name: p.name } });
+    if (product) {
+      product = await prisma.product.update({
+        where: { id: product.id },
+        data: { category: p.category, active: true, sortOrder: i },
+      });
+    } else {
+      product = await prisma.product.create({
+        data: { name: p.name, category: p.category, active: true, sortOrder: i },
+      });
+    }
 
     // Create or update default template
     const existing = await prisma.measurementTemplate.findFirst({
