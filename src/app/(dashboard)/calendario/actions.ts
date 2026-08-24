@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { hasPermission } from "@/lib/permissions";
 import { notify } from "@/lib/notify";
 import { notificaTitolari } from "@/lib/email";
+import { pushAppointmentToCalendar, deleteCalendarEvent } from "@/lib/google-calendar";
 
 const appointmentSchema = z.object({
   clientId: z.string().uuid("Seleziona un cliente"),
@@ -68,6 +69,24 @@ export async function createAppointment(formData: FormData) {
     link: `${process.env.NEXTAUTH_URL ?? ""}/calendario`,
   });
 
+  // Sincronizza con Google Calendar in background (non blocca la risposta)
+  void pushAppointmentToCalendar({
+    id: appointment.id,
+    scheduledAt: appointment.scheduledAt,
+    durationMin: appointment.durationMin,
+    type: appointment.type,
+    address: appointment.address,
+    notes: appointment.notes,
+    clientName: `${appointment.client.name} ${appointment.client.surname}`,
+  }).then((googleEventId) => {
+    if (googleEventId) {
+      void prisma.appointment.update({
+        where: { id: appointment.id },
+        data: { googleEventId },
+      });
+    }
+  });
+
   revalidatePath("/calendario");
 }
 
@@ -81,13 +100,26 @@ export async function updateAppointment(appointmentId: string, formData: FormDat
 
   const { assignedToId, scheduledAt, ...rest } = parsed.data;
 
-  await prisma.appointment.update({
+  const updated = await prisma.appointment.update({
     where: { id: appointmentId },
     data: {
       ...rest,
       scheduledAt: new Date(scheduledAt),
       assignedToId: assignedToId || null,
     },
+    include: { client: { select: { name: true, surname: true } } },
+  });
+
+  // Aggiorna l'evento su Google Calendar se già sincronizzato
+  void pushAppointmentToCalendar({
+    id: updated.id,
+    scheduledAt: updated.scheduledAt,
+    durationMin: updated.durationMin,
+    type: updated.type,
+    address: updated.address,
+    notes: updated.notes,
+    clientName: `${updated.client.name} ${updated.client.surname}`,
+    googleEventId: updated.googleEventId,
   });
 
   revalidatePath("/calendario");
@@ -109,6 +141,13 @@ export async function updateAppointmentStatus(appointmentId: string, status: str
 
 export async function deleteAppointment(appointmentId: string) {
   await requireWrite();
+  const appt = await prisma.appointment.findUnique({
+    where: { id: appointmentId },
+    select: { googleEventId: true },
+  });
   await prisma.appointment.delete({ where: { id: appointmentId } });
+  if (appt?.googleEventId) {
+    void deleteCalendarEvent(appt.googleEventId);
+  }
   revalidatePath("/calendario");
 }

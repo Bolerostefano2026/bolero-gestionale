@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { ComingSoon } from "@/components/ui/coming-soon";
 import { Badge } from "@/components/ui/badge";
+import { SheetsButton } from "./sheets-button";
 
 const INTEGRATIONS = [
   {
@@ -13,6 +14,7 @@ const INTEGRATIONS = [
       "Alimenta la sezione \"Parla con Bolero\": ricerca clienti, riepiloghi e proposte di azione con Claude via Anthropic API.",
     envVar: "ANTHROPIC_API_KEY",
     connected: () => Boolean(process.env.ANTHROPIC_API_KEY),
+    note: null,
   },
   {
     icon: ImageIcon,
@@ -21,30 +23,45 @@ const INTEGRATIONS = [
       "Storage per le foto delle schede di misurazione. Senza questa integrazione le foto vengono comunque salvate (come base64 nel database) ma non scala bene su grandi volumi.",
     envVar: "SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY",
     connected: () => Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY),
+    note: null,
   },
   {
     icon: Calendar,
     name: "Google Calendar",
     description:
-      "Sincronizza gli appuntamenti del calendario Bolero con Google Calendar in entrambe le direzioni.",
-    envVar: "GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET",
-    connected: () => Boolean(process.env.GOOGLE_CLIENT_ID),
+      "Sincronizza automaticamente gli appuntamenti di Bolero con un calendario Google condiviso. Ogni appuntamento creato, modificato o eliminato si aggiorna in tempo reale.",
+    envVar: "GOOGLE_SERVICE_ACCOUNT_EMAIL / GOOGLE_SERVICE_ACCOUNT_KEY / GOOGLE_CALENDAR_ID",
+    connected: () =>
+      Boolean(
+        process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL &&
+          process.env.GOOGLE_SERVICE_ACCOUNT_KEY &&
+          process.env.GOOGLE_CALENDAR_ID
+      ),
+    note: "Richiede un service account Google Cloud con accesso al Calendar API. Condividi il calendario con l'email del service account.",
   },
   {
     icon: Sheet,
     name: "Google Sheets",
     description:
-      "Esporta automaticamente clienti e preventivi confermati su un foglio Google condiviso.",
-    envVar: "GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET",
-    connected: () => Boolean(process.env.GOOGLE_CLIENT_ID),
+      "Esporta clienti, preventivi e fatture su un foglio Google condiviso. Usa il tasto \"Sincronizza ora\" per aggiornare manualmente i dati.",
+    envVar: "GOOGLE_SERVICE_ACCOUNT_EMAIL / GOOGLE_SERVICE_ACCOUNT_KEY / GOOGLE_SHEET_ID",
+    connected: () =>
+      Boolean(
+        process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL &&
+          process.env.GOOGLE_SERVICE_ACCOUNT_KEY &&
+          process.env.GOOGLE_SHEET_ID
+      ),
+    note: "Richiede un service account Google Cloud con accesso allo Sheets API. Crea il foglio con 3 schede: Clienti, Preventivi, Fatture — poi condividilo con l'email del service account.",
+    hasAction: true,
   },
   {
     icon: Mail,
     name: "Email transazionali (Resend)",
     description:
-      "Invio reale dei promemoria approvati e delle comunicazioni al cliente. Finché non è connesso, i promemoria restano visibili in coda ma non vengono recapitati.",
-    envVar: "RESEND_API_KEY + EMAIL_MITTENTE",
+      "Invio reale delle notifiche ai titolari: appuntamenti, preventivi fermi, fatture scadute. Senza questa integrazione le notifiche restano solo in-app.",
+    envVar: "RESEND_API_KEY / EMAIL_MITTENTE",
     connected: () => Boolean(process.env.RESEND_API_KEY && process.env.EMAIL_MITTENTE),
+    note: "EMAIL_MITTENTE = info@boleroserramenti.ch (deve essere un dominio verificato su Resend).",
   },
   {
     icon: Settings,
@@ -53,6 +70,7 @@ const INTEGRATIONS = [
       "Ogni mattina alle 07:00 controlla fatture scadute, preventivi fermi da 14+ giorni e appuntamenti odierni, inviando notifiche automatiche al titolare e ai collaboratori.",
     envVar: "CRON_SECRET",
     connected: () => Boolean(process.env.CRON_SECRET),
+    note: "Genera un segreto casuale (es. con openssl rand -hex 32) e aggiungilo sia su Vercel che nell'header x-cron-secret delle chiamate cron.",
   },
 ];
 
@@ -81,9 +99,12 @@ export default async function IntegrazioniPage() {
 
       <h1 className="mb-1 font-display text-2xl font-bold text-ink">Integrazioni</h1>
       <p className="mb-6 text-sm text-ink2">
-        Servizi esterni predisposti nell&apos;architettura. Richiedono credenziali da
-        configurare in <code className="rounded bg-sunken px-1 py-0.5 text-xs">.env</code>{" "}
-        prima di poter essere attivati.
+        Servizi esterni collegati al gestionale. Le variabili d&apos;ambiente vanno configurate
+        su{" "}
+        <span className="rounded bg-sunken px-1 py-0.5 text-xs font-mono">
+          Vercel → Settings → Environment Variables
+        </span>
+        .
       </p>
 
       <div className="space-y-3">
@@ -98,18 +119,28 @@ export default async function IntegrazioniPage() {
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-copper-bg text-copper">
                 <Icon size={18} />
               </span>
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
                   <p className="text-sm font-semibold text-ink">{integration.name}</p>
-                  <Badge
-                    label={isConnected ? "Connesso" : "Non connesso"}
-                    tone={isConnected ? "success" : "neutral"}
-                  />
+                  <div className="flex items-center gap-2 shrink-0">
+                    {"hasAction" in integration && integration.hasAction && isConnected && (
+                      <SheetsButton />
+                    )}
+                    <Badge
+                      label={isConnected ? "Connesso" : "Non connesso"}
+                      tone={isConnected ? "success" : "neutral"}
+                    />
+                  </div>
                 </div>
                 <p className="mt-1 text-sm text-ink2">{integration.description}</p>
+                {integration.note && (
+                  <p className="mt-1.5 text-xs text-ink3 italic">{integration.note}</p>
+                )}
                 <p className="mt-2 text-xs text-ink3">
                   Variabili richieste:{" "}
-                  <code className="rounded bg-sunken px-1 py-0.5">{integration.envVar}</code>
+                  <code className="rounded bg-sunken px-1 py-0.5 font-mono">
+                    {integration.envVar}
+                  </code>
                 </p>
               </div>
             </div>

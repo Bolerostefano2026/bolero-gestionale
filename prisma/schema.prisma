@@ -123,7 +123,8 @@ model Appointment {
   scheduledAt  DateTime
   durationMin  Int               @default(60)
   address      String?
-  notes        String?
+  notes          String?
+  googleEventId  String?
   createdById  String?
   createdBy    User?             @relation("AppointmentCreatedBy", fields: [createdById], references: [id])
   createdAt    DateTime          @default(now())

