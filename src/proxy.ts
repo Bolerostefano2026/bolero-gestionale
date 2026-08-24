@@ -1,17 +1,26 @@
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
+const PUBLIC_API = ["/api/auth", "/api/health"];
+
 export default auth((req) => {
   const isLoggedIn = !!req.auth;
   const { pathname } = req.nextUrl;
 
   const isLoginPage = pathname === "/login";
-  const isPublic =
-    pathname.startsWith("/api/") ||
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/favicon");
+  const isStaticOrNext =
+    pathname.startsWith("/_next") || pathname.startsWith("/favicon");
 
-  if (isPublic) return NextResponse.next();
+  if (isStaticOrNext) return NextResponse.next();
+
+  // Protegge le route API non pubbliche
+  if (pathname.startsWith("/api/")) {
+    const isPublicApi = PUBLIC_API.some((p) => pathname.startsWith(p));
+    if (!isPublicApi && !isLoggedIn) {
+      return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
+    }
+    return NextResponse.next();
+  }
 
   if (!isLoggedIn && !isLoginPage) {
     const loginUrl = new URL("/login", req.nextUrl.origin);
