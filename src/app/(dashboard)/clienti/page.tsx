@@ -5,8 +5,8 @@ import { Plus, Search } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasPermission } from "@/lib/permissions";
-import { Badge } from "@/components/ui/badge";
-import { Pagination, PAGE_SIZE, buildPageUrl } from "@/components/ui/pagination";
+import { Pagination, PAGE_SIZE } from "@/components/ui/pagination";
+import { ClientiList } from "@/components/clienti/clienti-list";
 import { CLIENT_STATUS } from "@/lib/labels";
 import type { Prisma } from "@prisma/client";
 
@@ -108,56 +108,7 @@ export default async function ClientiPage({
         </button>
       </form>
 
-      <div className="overflow-x-auto rounded-lg border border-fog bg-surface">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-fog bg-sunken text-left text-[11px] uppercase tracking-wide text-ink3">
-              <th className="px-4 py-2.5 font-semibold">Nome</th>
-              <th className="px-4 py-2.5 font-semibold">Contatti</th>
-              <th className="px-4 py-2.5 font-semibold">Città</th>
-              <th className="px-4 py-2.5 font-semibold">Stato</th>
-              <th className="px-4 py-2.5 font-semibold">Creato</th>
-            </tr>
-          </thead>
-          <tbody>
-            {clients.map((c) => {
-              const statusInfo = CLIENT_STATUS[c.status];
-              return (
-                <tr
-                  key={c.id}
-                  className="border-b border-fog last:border-0 hover:bg-sunken/60"
-                >
-                  <td className="px-4 py-2.5">
-                    <Link
-                      href={`/clienti/${c.id}`}
-                      className="font-medium text-ink hover:text-copper"
-                    >
-                      {c.name} {c.surname}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-2.5 text-ink2">
-                    {c.phone || c.email || "—"}
-                  </td>
-                  <td className="px-4 py-2.5 text-ink2">{c.city || "—"}</td>
-                  <td className="px-4 py-2.5">
-                    <Badge label={statusInfo.label} tone={statusInfo.tone} />
-                  </td>
-                  <td className="px-4 py-2.5 text-ink3">
-                    {c.createdAt.toLocaleDateString("it-IT")}
-                  </td>
-                </tr>
-              );
-            })}
-            {clients.length === 0 && (
-              <tr>
-                <td colSpan={5} className="px-4 py-10 text-center text-ink3">
-                  Nessun cliente trovato.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <ClientiList clients={clients} />
       <Pagination page={page} total={total} searchParams={{ q, status }} />
     </div>
   );

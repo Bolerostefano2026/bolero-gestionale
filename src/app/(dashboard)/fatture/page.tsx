@@ -5,7 +5,7 @@ import { Plus, Inbox, Receipt } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasPermission } from "@/lib/permissions";
-import { Badge } from "@/components/ui/badge";
+import { FattureList } from "@/components/fatture/fatture-list";
 import { ComingSoon } from "@/components/ui/coming-soon";
 import { Pagination, PAGE_SIZE } from "@/components/ui/pagination";
 import { INVOICE_STATUS } from "@/lib/labels";
@@ -173,64 +173,7 @@ export default async function FatturePage({
         )}
       </form>
 
-      <div className="overflow-x-auto rounded-lg border border-fog bg-surface">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-fog bg-sunken text-left text-[11px] uppercase tracking-wide text-ink3">
-              <th className="px-4 py-2.5 font-semibold">Numero</th>
-              <th className="px-4 py-2.5 font-semibold">Cliente</th>
-              <th className="px-4 py-2.5 text-right font-semibold">Totale CHF</th>
-              <th className="px-4 py-2.5 font-semibold">Scadenza</th>
-              <th className="px-4 py-2.5 font-semibold">Stato</th>
-            </tr>
-          </thead>
-          <tbody>
-            {invoicesWithOverdue.map((inv) => {
-              const s = INVOICE_STATUS[inv.status];
-              return (
-                <tr
-                  key={inv.id}
-                  className={`border-b border-fog last:border-0 hover:bg-sunken/60 ${inv.overdue ? "bg-danger/[0.03]" : ""}`}
-                >
-                  <td className="px-4 py-2.5">
-                    <Link
-                      href={`/fatture/${inv.id}`}
-                      className="font-medium text-ink hover:text-copper"
-                    >
-                      {inv.number}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-2.5 text-ink2">
-                    <Link href={`/clienti/${inv.clientId}`} className="hover:text-copper">
-                      {inv.client.name} {inv.client.surname}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-2.5 tabular-nums text-right font-medium text-ink">
-                    {Number(inv.total).toLocaleString("it-CH", { minimumFractionDigits: 2 })}
-                  </td>
-                  <td className={`px-4 py-2.5 ${inv.overdue ? "font-semibold text-danger" : "text-ink3"}`}>
-                    {inv.dueDate.toLocaleDateString("it-IT")}
-                  </td>
-                  <td className="px-4 py-2.5">
-                    {inv.overdue ? (
-                      <Badge label="Scaduta" tone="danger" />
-                    ) : (
-                      <Badge label={s.label} tone={s.tone} />
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-            {invoices.length === 0 && (
-              <tr>
-                <td colSpan={5} className="px-4 py-10 text-center text-ink3">
-                  Nessuna fattura trovata.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <FattureList invoices={invoicesWithOverdue} />
       <Pagination page={page} total={total} searchParams={{ status, q }} />
     </div>
   );

@@ -5,9 +5,9 @@ import { Plus } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasPermission } from "@/lib/permissions";
-import { Badge } from "@/components/ui/badge";
 import { Pagination, PAGE_SIZE } from "@/components/ui/pagination";
 import { QUOTE_STATUS } from "@/lib/labels";
+import { PreventiviList } from "@/components/preventivi/preventivi-list";
 import type { Prisma } from "@prisma/client";
 
 export default async function PreventiviPage({
@@ -116,70 +116,7 @@ export default async function PreventiviPage({
         )}
       </form>
 
-      <div className="overflow-x-auto rounded-lg border border-fog bg-surface">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-fog bg-sunken text-left text-[11px] uppercase tracking-wide text-ink3">
-              <th className="px-4 py-2.5 font-semibold">Numero</th>
-              <th className="px-4 py-2.5 font-semibold">Cliente</th>
-              <th className="px-4 py-2.5 text-right font-semibold">Totale CHF</th>
-              <th className="px-4 py-2.5 font-semibold">Stato</th>
-              <th className="px-4 py-2.5 font-semibold hidden sm:table-cell">Scadenza</th>
-              <th className="px-4 py-2.5 font-semibold">Data</th>
-            </tr>
-          </thead>
-          <tbody>
-            {quotes.map((q) => {
-              const s = QUOTE_STATUS[q.status];
-              return (
-                <tr
-                  key={q.id}
-                  className="border-b border-fog last:border-0 hover:bg-sunken/60"
-                >
-                  <td className="px-4 py-2.5">
-                    <Link
-                      href={`/preventivi/${q.id}`}
-                      className="font-medium text-ink hover:text-copper"
-                    >
-                      {q.number}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-2.5 text-ink2">
-                    <Link href={`/clienti/${q.clientId}`} className="hover:text-copper">
-                      {q.client.name} {q.client.surname}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-2.5 tabular-nums text-right text-ink font-medium">
-                    {Number(q.total).toLocaleString("it-CH", { minimumFractionDigits: 2 })}
-                  </td>
-                  <td className="px-4 py-2.5">
-                    <Badge label={s.label} tone={s.tone} />
-                  </td>
-                  <td className="px-4 py-2.5 hidden sm:table-cell">
-                    {q.validUntil ? (
-                      <span className={q.validUntil < new Date() && !["APPROVATO","CONVERTITO","COMPLETATO","RIFIUTATO"].includes(q.status) ? "font-semibold text-danger" : "text-ink3"}>
-                        {q.validUntil.toLocaleDateString("it-IT")}
-                      </span>
-                    ) : (
-                      <span className="text-ink3">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-2.5 text-ink3">
-                    {q.createdAt.toLocaleDateString("it-IT")}
-                  </td>
-                </tr>
-              );
-            })}
-            {quotes.length === 0 && (
-              <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-ink3">
-                  Nessun preventivo trovato.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <PreventiviList quotes={quotes} />
       <Pagination page={page} total={total} searchParams={{ status, q }} />
     </div>
   );
