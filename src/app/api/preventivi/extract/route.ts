@@ -15,23 +15,24 @@ export async function POST(req: Request) {
 
   const bytes = await file.arrayBuffer();
   const base64 = Buffer.from(bytes).toString("base64");
-  const mediaType = (file.type || "application/pdf") as "application/pdf" | "image/jpeg" | "image/png" | "image/gif" | "image/webp";
-
+  const mediaType = file.type || "image/jpeg";
   const isPdf = mediaType === "application/pdf";
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const fileBlock: any = isPdf
+    ? { type: "document", source: { type: "base64", media_type: "application/pdf", data: base64 } }
+    : { type: "image", source: { type: "base64", media_type: mediaType, data: base64 } };
+
   const response = await client.messages.create({
-    model: "claude-opus-4-5",
+    model: "claude-haiku-4-5-20251001",
     max_tokens: 2048,
     messages: [
       {
         role: "user",
-        content: [
-          isPdf
-            ? { type: "document", source: { type: "base64", media_type: mediaType, data: base64 } }
-            : { type: "image", source: { type: "base64", media_type: mediaType as "image/jpeg" | "image/png" | "image/gif" | "image/webp", data: base64 } },
-          {
-            type: "text",
-            text: `Analizza questo preventivo del fornitore ed estrai le voci.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        content: [fileBlock, {
+          type: "text",
+          text: `Analizza questo preventivo del fornitore ed estrai le voci.
 Restituisci SOLO un JSON valido con questa struttura (nessun testo extra):
 {
   "items": [
@@ -41,8 +42,7 @@ Restituisci SOLO un JSON valido con questa struttura (nessun testo extra):
 }
 Le quantità devono essere numeri. I prezzi devono essere numeri senza simbolo valuta.
 Se non riesci a determinare un campo, usa valori di default (quantity: 1, unitPrice: 0).`,
-          },
-        ],
+        }] as Anthropic.MessageParam["content"],
       },
     ],
   });
