@@ -8,12 +8,12 @@ import type { Dimensions } from "@/lib/dimensions";
 const POST_RADIUS = 0.06;
 const BEAM_SIZE = 0.08;
 
-function Structure({ width, depth, height }: Dimensions) {
+function Structure({ width, depth, height, color }: Dimensions & { color?: string | null }) {
   const hw = width / 2;
   const hd = depth / 2;
-  const postColor = "#8C8680";
-  const frameColor = "#A8682A";
-  const fabricColor = "#C4895A";
+  const postColor = color ?? "#8C8680";
+  const frameColor = color ?? "#A8682A";
+  const fabricColor = color ?? "#C4895A";
 
   const corners: [number, number][] = [
     [-hw, -hd],
@@ -64,7 +64,7 @@ function Structure({ width, depth, height }: Dimensions) {
   );
 }
 
-export function PergolaModel({ dimensions }: { dimensions: Dimensions }) {
+export function PergolaModel({ dimensions, color }: { dimensions: Dimensions; color?: string | null }) {
   const maxSpan = Math.max(dimensions.width, dimensions.depth, 4);
 
   return (
@@ -82,7 +82,7 @@ export function PergolaModel({ dimensions }: { dimensions: Dimensions }) {
           shadow-mapSize={[1024, 1024]}
         />
         <Suspense fallback={null}>
-          <Structure {...dimensions} />
+          <Structure {...dimensions} color={color} />
           <Environment preset="city" />
         </Suspense>
         <Grid

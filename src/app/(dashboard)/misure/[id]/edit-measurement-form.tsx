@@ -6,7 +6,7 @@ import { updateMeasurement } from "../actions";
 import { DynamicField } from "../dynamic-field";
 import { PhotoUploader, type Photo } from "../photo-uploader";
 import { Preview3DPanel } from "@/components/three/preview-3d-panel";
-import { extractDimensions, hasAnyDimension } from "@/lib/dimensions";
+import { extractDimensions, extractColor, hasAnyDimension } from "@/lib/dimensions";
 import type { FieldDef } from "@/lib/field-types";
 import { Check } from "lucide-react";
 
@@ -20,6 +20,7 @@ export function EditMeasurementForm({
   initialPhotos,
   initialNotes,
   schedaModificata,
+  productName = "",
 }: {
   measurementId: string;
   fields: FieldDef[];
@@ -27,6 +28,7 @@ export function EditMeasurementForm({
   initialPhotos: Photo[];
   initialNotes: string;
   schedaModificata: boolean;
+  productName?: string;
 }) {
   const [values, setValues] = useState<Record<string, unknown>>(initialData);
   const [photos, setPhotos] = useState<Photo[]>(initialPhotos);
@@ -85,7 +87,11 @@ export function EditMeasurementForm({
           <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink2">
             Anteprima 3D
           </label>
-          <Preview3DPanel dimensions={extractDimensions(fields, values)} />
+          <Preview3DPanel
+            dimensions={extractDimensions(fields, values)}
+            productName={productName}
+            color={extractColor(fields, values)}
+          />
         </div>
       )}
 

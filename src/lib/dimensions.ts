@@ -73,3 +73,65 @@ export function extractDimensions(
 export function hasAnyDimension(fields: FieldDef[]) {
   return fields.some((f) => f.type === "dimension");
 }
+
+/** Italian/common color name → hex. Returns the original string if it's already a hex color. */
+function colorNameToHex(name: string): string | null {
+  const n = name.toLowerCase().trim();
+  if (/^#[0-9a-f]{3,6}$/i.test(n)) return n;
+  const map: Record<string, string> = {
+    bianco: "#F5F2EE",
+    white: "#F5F2EE",
+    nero: "#2A2520",
+    black: "#2A2520",
+    antracite: "#484440",
+    grigio: "#7A7470",
+    gray: "#7A7470",
+    grey: "#7A7470",
+    "grigio antracite": "#484440",
+    argento: "#A8A4A0",
+    silver: "#A8A4A0",
+    beige: "#D4C4A8",
+    sabbia: "#D4C4A8",
+    sand: "#D4C4A8",
+    crema: "#EDE3CC",
+    marrone: "#7A4A28",
+    brown: "#7A4A28",
+    bronzo: "#8C6A3C",
+    bronze: "#8C6A3C",
+    rame: "#C8923C",
+    copper: "#C8923C",
+    azzurro: "#6B9EC8",
+    blu: "#2C4A7C",
+    blue: "#2C4A7C",
+    verde: "#4A7A5A",
+    green: "#4A7A5A",
+    rosso: "#9C3A2A",
+    red: "#9C3A2A",
+    arancio: "#C87A3C",
+    giallo: "#D4A84A",
+    yellow: "#D4A84A",
+  };
+  return map[n] ?? null;
+}
+
+/**
+ * Scans field data for any field whose label contains "color" keywords
+ * and returns the best matching hex color, or null if none found.
+ */
+export function extractColor(
+  fields: FieldDef[],
+  data: Record<string, unknown>
+): string | null {
+  const colorFields = fields.filter((f) =>
+    ["color", "colour", "tinta", "finitura", "ral"].some((kw) =>
+      f.label.toLowerCase().includes(kw)
+    )
+  );
+  for (const field of colorFields) {
+    const raw = data[field.key];
+    if (!raw || typeof raw !== "string") continue;
+    const hex = colorNameToHex(raw);
+    if (hex) return hex;
+  }
+  return null;
+}

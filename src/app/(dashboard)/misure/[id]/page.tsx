@@ -81,6 +81,7 @@ export default async function MeasurementDetailPage({
             initialPhotos={photos}
             initialNotes={measurement.notes ?? ""}
             schedaModificata={schedaModificata}
+            productName={measurement.product.name}
           />
           <p className="mt-4 text-xs text-ink3">
             Rilevata il {measurement.createdAt.toLocaleDateString("it-IT")}

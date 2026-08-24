@@ -6,7 +6,7 @@ import { createMeasurement } from "./actions";
 import { DynamicField } from "./dynamic-field";
 import { PhotoUploader, type Photo } from "./photo-uploader";
 import { Preview3DPanel } from "@/components/three/preview-3d-panel";
-import { extractDimensions, hasAnyDimension } from "@/lib/dimensions";
+import { extractDimensions, extractColor, hasAnyDimension } from "@/lib/dimensions";
 import type { FieldDef } from "@/lib/field-types";
 
 const inputClass =
@@ -136,7 +136,11 @@ export function MeasurementForm({
               <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink2">
                 Anteprima 3D
               </label>
-              <Preview3DPanel dimensions={extractDimensions(fields, values)} />
+              <Preview3DPanel
+                dimensions={extractDimensions(fields, values)}
+                productName={selectedProduct?.name ?? ""}
+                color={extractColor(fields, values)}
+              />
             </div>
           )}
 
