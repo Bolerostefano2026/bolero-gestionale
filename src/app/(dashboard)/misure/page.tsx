@@ -30,6 +30,7 @@ export default async function MisurePage({
         createdBy: { select: { name: true } },
       },
       orderBy: { createdAt: "desc" },
+      take: 200,
     }),
     prisma.client.findMany({
       select: { id: true, name: true, surname: true },
