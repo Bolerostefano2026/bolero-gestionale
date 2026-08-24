@@ -56,6 +56,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.roleName = user.roleName;
         token.roleLabel = user.roleLabel;
         token.permissions = user.permissions;
+        token.activeCheckedAt = Date.now();
+      }
+      // Controlla se l'utente è ancora attivo ogni ora — invalida il token se disabilitato
+      const checkedAt = (token.activeCheckedAt as number | undefined) ?? 0;
+      if (token.sub && Date.now() - checkedAt > 60 * 60 * 1000) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.sub },
+          select: { active: true },
+        });
+        if (!dbUser?.active) return null;
+        token.activeCheckedAt = Date.now();
       }
       // Quando il client chiama update() dopo cambio nome/avatar, rilegge il DB
       if (trigger === "update" && token.sub) {

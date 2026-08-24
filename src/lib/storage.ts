@@ -27,10 +27,8 @@ export const storageConfigured = () =>
   Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 /**
- * Uploads a file to Supabase Storage and returns its public URL. Falls back
- * to a base64 data URI when Storage isn't configured (local dev without
- * Supabase, or before the bucket is set up) so photo upload always works —
- * just without the scalability of real object storage.
+ * Uploads a file to Supabase Storage and returns its public URL.
+ * Throws if Supabase is not configured or if the upload fails.
  */
 export async function uploadPhoto(
   buffer: Buffer,
@@ -38,19 +36,21 @@ export async function uploadPhoto(
   contentType: string
 ): Promise<string> {
   const client = getSupabaseAdmin();
-
-  if (client) {
-    await ensureBucket(client);
-    const path = `measurements/${filename}`;
-    const { error } = await client.storage
-      .from(BUCKET)
-      .upload(path, buffer, { contentType, upsert: false });
-
-    if (!error) {
-      return client.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
-    }
-    // Falls through to data URI on error so uploads never hard-fail.
+  if (!client) {
+    throw new Error(
+      "Upload foto non disponibile: SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY non configurati. Configurali nelle variabili d'ambiente."
+    );
   }
 
-  return `data:${contentType};base64,${buffer.toString("base64")}`;
+  await ensureBucket(client);
+  const path = `measurements/${filename}`;
+  const { error } = await client.storage
+    .from(BUCKET)
+    .upload(path, buffer, { contentType, upsert: false });
+
+  if (error) {
+    throw new Error(`Upload foto fallito: ${error.message}`);
+  }
+
+  return client.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
 }

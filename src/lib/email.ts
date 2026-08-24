@@ -30,7 +30,7 @@ export async function notificaTitolari(params: {
   // Import lazy per evitare dipendenza circolare con prisma in lib/
   const { prisma } = await import("@/lib/prisma");
   const titolari = await prisma.user.findMany({
-    where: { role: { name: "TITOLARE" }, active: true },
+    where: { role: { name: "titolare" }, active: true },
     select: { email: true },
   });
   if (titolari.length === 0) return;

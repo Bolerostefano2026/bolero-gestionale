@@ -1,9 +1,26 @@
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { hasPermission, type Permission } from "@/lib/permissions";
 import { WORKFLOW_STAGES } from "@/lib/labels";
 import type { Session } from "next-auth";
 
 type ToolSession = Session["user"];
+
+const PAYLOAD_SCHEMAS: Record<string, z.ZodTypeAny> = {
+  createAppointment: z.object({
+    clientId: z.string(),
+    type: z.string(),
+    scheduledAt: z.string(),
+    notes: z.string().optional(),
+  }),
+  advanceWorkflow: z.object({
+    projectId: z.string(),
+    note: z.string().optional(),
+  }),
+  approveQuote: z.object({
+    quoteId: z.string(),
+  }),
+};
 
 const REQUIRED_PERMISSION: Record<string, Permission> = {
   createAppointment: "appointments:write",
@@ -95,7 +112,9 @@ export async function executeAiAction(actionId: string, session: ToolSession) {
   const executor = EXECUTORS[action.action];
   if (!executor) throw new Error(`Azione sconosciuta: ${action.action}`);
 
-  await executor(action.payload as never, session);
+  const schema = PAYLOAD_SCHEMAS[action.action];
+  const payload = schema ? schema.parse(action.payload) : action.payload;
+  await executor(payload as never, session);
 
   await prisma.aiAction.update({
     where: { id: actionId },

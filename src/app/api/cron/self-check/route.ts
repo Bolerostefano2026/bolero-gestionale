@@ -5,7 +5,7 @@ export const runtime = "nodejs";
 
 export async function GET(req: Request) {
   const secret = req.headers.get("x-cron-secret");
-  if (process.env.CRON_SECRET && secret !== process.env.CRON_SECRET) {
+  if (!process.env.CRON_SECRET || secret !== process.env.CRON_SECRET) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
   }
 
@@ -55,7 +55,7 @@ export async function GET(req: Request) {
   if (problemi.length > 0) {
     const apiKey = process.env.RESEND_API_KEY;
     const mittente = process.env.EMAIL_MITTENTE;
-    const destinatario = "danieletarantino01@gmail.com";
+    const destinatario = process.env.DEVELOPER_EMAIL ?? "danieletarantino01@gmail.com";
 
     if (apiKey && mittente) {
       const html = `
