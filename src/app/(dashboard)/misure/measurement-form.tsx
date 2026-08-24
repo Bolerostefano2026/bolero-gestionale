@@ -136,7 +136,10 @@ export function MeasurementForm({
               <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink2">
                 Anteprima 3D
               </label>
-              <Preview3DPanel dimensions={extractDimensions(fields, values)} />
+              <Preview3DPanel
+                dimensions={extractDimensions(fields, values)}
+                productName={selectedProduct?.name ?? ""}
+              />
             </div>
           )}
 
