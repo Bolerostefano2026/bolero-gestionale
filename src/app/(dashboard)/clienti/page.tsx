@@ -6,17 +6,19 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasPermission } from "@/lib/permissions";
 import { Badge } from "@/components/ui/badge";
+import { Pagination, PAGE_SIZE, buildPageUrl } from "@/components/ui/pagination";
 import { CLIENT_STATUS } from "@/lib/labels";
 import type { Prisma } from "@prisma/client";
 
 export default async function ClientiPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; status?: string }>;
+  searchParams: Promise<{ q?: string; status?: string; page?: string }>;
 }) {
   const session = await auth();
   const canWrite = hasPermission(session?.user.permissions, "clients:write");
-  const { q, status } = await searchParams;
+  const { q, status, page: pageStr } = await searchParams;
+  const page = Math.max(1, parseInt(pageStr ?? "1", 10));
 
   const where: Prisma.ClientWhereInput = {};
   if (q) {
@@ -31,10 +33,15 @@ export default async function ClientiPage({
     where.status = status as Prisma.EnumClientStatusFilter["equals"];
   }
 
-  const clients = await prisma.client.findMany({
-    where,
-    orderBy: { createdAt: "desc" },
-  });
+  const [clients, total] = await Promise.all([
+    prisma.client.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * PAGE_SIZE,
+      take: PAGE_SIZE,
+    }),
+    prisma.client.count({ where }),
+  ]);
 
   return (
     <div>
@@ -42,7 +49,7 @@ export default async function ClientiPage({
         <div>
           <h1 className="font-display text-2xl font-bold text-ink">Clienti</h1>
           <p className="mt-1 text-sm text-ink2">
-            {clients.length} {clients.length === 1 ? "cliente" : "clienti"}
+            {total} {total === 1 ? "cliente" : "clienti"}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -151,6 +158,7 @@ export default async function ClientiPage({
           </tbody>
         </table>
       </div>
+      <Pagination page={page} total={total} searchParams={{ q, status }} />
     </div>
   );
 }

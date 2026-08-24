@@ -21,6 +21,16 @@ const sans = DM_Sans({
 export const metadata: Metadata = {
   title: "BOLERO — Gestionale",
   description: "Sistema operativo digitale per montaggio, tende e pergole.",
+  manifest: "/manifest.json",
+  themeColor: "#1A1410",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Bolero",
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -1,0 +1,27 @@
+{
+  "name": "BOLERO Gestionale",
+  "short_name": "Bolero",
+  "description": "Gestionale per serramenti, tende e pergole",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F5EDE0",
+  "theme_color": "#1A1410",
+  "lang": "it",
+  "icons": [
+    {
+      "src": "/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "categories": ["business", "productivity"]
+}

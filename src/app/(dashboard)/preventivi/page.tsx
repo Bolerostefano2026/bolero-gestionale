@@ -6,17 +6,19 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasPermission } from "@/lib/permissions";
 import { Badge } from "@/components/ui/badge";
+import { Pagination, PAGE_SIZE } from "@/components/ui/pagination";
 import { QUOTE_STATUS } from "@/lib/labels";
 import type { Prisma } from "@prisma/client";
 
 export default async function PreventiviPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; q?: string }>;
+  searchParams: Promise<{ status?: string; q?: string; page?: string }>;
 }) {
   const session = await auth();
   const canWrite = hasPermission(session?.user.permissions, "quotes:write");
-  const { status, q } = await searchParams;
+  const { status, q, page: pageStr } = await searchParams;
+  const page = Math.max(1, parseInt(pageStr ?? "1", 10));
 
   const where: Prisma.QuoteWhereInput = {};
   if (status) where.status = status as Prisma.EnumQuoteStatusFilter["equals"];
@@ -28,12 +30,15 @@ export default async function PreventiviPage({
     ];
   }
 
-  const [quotes, pipeline] = await Promise.all([
+  const [quotes, total, pipeline] = await Promise.all([
     prisma.quote.findMany({
       where,
       include: { client: { select: { name: true, surname: true } } },
       orderBy: { createdAt: "desc" },
+      skip: (page - 1) * PAGE_SIZE,
+      take: PAGE_SIZE,
     }),
+    prisma.quote.count({ where }),
     prisma.quote.aggregate({
       where: { status: { in: ["INVIATO", "IN_ATTESA", "APPROVATO"] } },
       _sum: { total: true },
@@ -49,7 +54,7 @@ export default async function PreventiviPage({
         <div>
           <h1 className="font-display text-2xl font-bold text-ink">Preventivi</h1>
           <p className="mt-1 text-sm text-ink2">
-            {quotes.length} {quotes.length === 1 ? "preventivo" : "preventivi"}
+            {total} {total === 1 ? "preventivo" : "preventivi"}
             {pipelineValue > 0 && (
               <span className="ml-2 text-copper font-semibold">
                 · Pipeline CHF {pipelineValue.toLocaleString("it-CH", { minimumFractionDigits: 2 })}
@@ -175,6 +180,7 @@ export default async function PreventiviPage({
           </tbody>
         </table>
       </div>
+      <Pagination page={page} total={total} searchParams={{ status, q }} />
     </div>
   );
 }

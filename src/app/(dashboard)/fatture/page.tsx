@@ -7,13 +7,14 @@ import { prisma } from "@/lib/prisma";
 import { hasPermission } from "@/lib/permissions";
 import { Badge } from "@/components/ui/badge";
 import { ComingSoon } from "@/components/ui/coming-soon";
+import { Pagination, PAGE_SIZE } from "@/components/ui/pagination";
 import { INVOICE_STATUS } from "@/lib/labels";
 import type { Prisma } from "@prisma/client";
 
 export default async function FatturePage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; q?: string }>;
+  searchParams: Promise<{ status?: string; q?: string; page?: string }>;
 }) {
   const session = await auth();
 
@@ -30,7 +31,8 @@ export default async function FatturePage({
 
   const canWrite = hasPermission(session?.user.permissions, "invoices:write");
   const canApprove = hasPermission(session?.user.permissions, "invoices:approve_reminder");
-  const { status, q } = await searchParams;
+  const { status, q, page: pageStr } = await searchParams;
+  const page = Math.max(1, parseInt(pageStr ?? "1", 10));
 
   const where: Prisma.InvoiceWhereInput = {};
   if (status) where.status = status as Prisma.EnumInvoiceStatusFilter["equals"];
@@ -42,12 +44,15 @@ export default async function FatturePage({
     ];
   }
 
-  const [invoices, kpi, pendingReminders] = await Promise.all([
+  const [invoices, total, kpi, pendingReminders] = await Promise.all([
     prisma.invoice.findMany({
       where,
       include: { client: { select: { name: true, surname: true } } },
       orderBy: { issuedAt: "desc" },
+      skip: (page - 1) * PAGE_SIZE,
+      take: PAGE_SIZE,
     }),
+    prisma.invoice.count({ where }),
     prisma.invoice.groupBy({
       by: ["status"],
       _sum: { total: true },
@@ -71,7 +76,7 @@ export default async function FatturePage({
         <div>
           <h1 className="font-display text-2xl font-bold text-ink">Fatture</h1>
           <p className="mt-1 text-sm text-ink2">
-            {invoices.length} {invoices.length === 1 ? "fattura" : "fatture"}
+            {total} {total === 1 ? "fattura" : "fatture"}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -226,6 +231,7 @@ export default async function FatturePage({
           </tbody>
         </table>
       </div>
+      <Pagination page={page} total={total} searchParams={{ status, q }} />
     </div>
   );
 }

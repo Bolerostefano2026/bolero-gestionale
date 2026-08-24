@@ -92,6 +92,8 @@ model Client {
   updatedAt    DateTime      @updatedAt
 
   @@map("clients")
+  @@index([status])
+  @@index([createdAt])
 }
 
 // ── Fase 2: Calendario ────────────────────────────────────────
@@ -168,6 +170,8 @@ model Quote {
 
   @@map("quotes")
   @@index([clientId])
+  @@index([status, updatedAt])
+  @@index([createdAt])
 }
 
 model QuoteVersion {
@@ -243,6 +247,7 @@ model Measurement {
   @@map("measurements")
   @@index([clientId])
   @@index([productId])
+  @@index([templateId])
 }
 
 // ── Fase 5: Workflow ────────────────────────────────────────────
@@ -360,6 +365,8 @@ model Invoice {
   @@map("invoices")
   @@index([clientId])
   @@index([status])
+  @@index([status, dueDate])
+  @@index([issuedAt])
 }
 
 model Payment {
