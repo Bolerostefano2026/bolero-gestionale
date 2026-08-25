@@ -8,6 +8,7 @@ import { ComingSoon } from "@/components/ui/coming-soon";
 import { CreateUserForm } from "./create-user-form";
 import { UserActiveToggle } from "./user-active-toggle";
 import { UserRoleSelect } from "./user-role-select";
+import { UserActions } from "./user-actions";
 
 export default async function ImpostazioniPage() {
   const session = await auth();
@@ -133,6 +134,7 @@ export default async function ImpostazioniPage() {
               <th className="px-4 py-2.5 font-semibold">Email</th>
               <th className="px-4 py-2.5 font-semibold">Ruolo</th>
               <th className="px-4 py-2.5 font-semibold">Attivo</th>
+              <th className="px-4 py-2.5 font-semibold"></th>
             </tr>
           </thead>
           <tbody>
@@ -154,6 +156,11 @@ export default async function ImpostazioniPage() {
                     active={u.active}
                     disabled={u.id === user.id}
                   />
+                </td>
+                <td className="px-4 py-2.5">
+                  {!isDeveloper(u.email) && u.id !== user.id && (
+                    <UserActions userId={u.id} name={u.name ?? ""} email={u.email ?? ""} />
+                  )}
                 </td>
               </tr>
             ))}
