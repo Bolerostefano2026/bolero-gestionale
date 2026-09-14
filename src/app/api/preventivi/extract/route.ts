@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
-import { PDFParse } from "pdf-parse";
+import { extractText, getDocumentProxy } from "unpdf";
 
 export const runtime = "nodejs";
 
@@ -142,9 +142,8 @@ export async function POST(req: Request) {
   if (isPdf) {
     try {
       const bytes = await file.arrayBuffer();
-      const parser = new PDFParse({ data: Buffer.from(bytes) });
-      const { text } = await parser.getText();
-      await parser.destroy();
+      const pdf = await getDocumentProxy(new Uint8Array(bytes));
+      const { text } = await extractText(pdf, { mergePages: true });
 
       const items = extractItemsFromText(text);
       if (items.length > 0) {
