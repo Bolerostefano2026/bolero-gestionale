@@ -53,6 +53,7 @@ export function QuoteForm({
   const [pending, startTransition] = useTransition();
   const [extracting, setExtracting] = useState(false);
   const [extractError, setExtractError] = useState<string | null>(null);
+  const [extractNotice, setExtractNotice] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -60,11 +61,12 @@ export function QuoteForm({
   async function extractFromFile(file: File) {
     setExtracting(true);
     setExtractError(null);
+    setExtractNotice(null);
     try {
       const fd = new FormData();
       fd.append("file", file);
       const res = await fetch("/api/preventivi/extract", { method: "POST", body: fd });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Errore estrazione");
       if (Array.isArray(data.items) && data.items.length > 0) {
         setItems(data.items.map((it: Partial<Item>) => ({
@@ -72,6 +74,11 @@ export function QuoteForm({
           quantity: Number(it.quantity) || 1,
           unitPrice: Number(it.unitPrice) || 0,
         })));
+      }
+      if (data.source === "local") {
+        setExtractNotice(
+          "Lettura automatica senza AI (crediti non disponibili): controlla le voci prima di salvare."
+        );
       }
     } catch (e) {
       setExtractError(e instanceof Error ? e.message : "Errore imprevisto");
@@ -179,6 +186,9 @@ export function QuoteForm({
         </div>
         {extractError && (
           <p className="mt-1 text-xs text-danger">{extractError}</p>
+        )}
+        {extractNotice && (
+          <p className="mt-1 text-xs text-ink2">{extractNotice}</p>
         )}
       </div>
 
